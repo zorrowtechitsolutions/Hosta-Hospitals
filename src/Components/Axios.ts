@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_AXIOS_BASEURL,
+  baseURL: "https://hosta-server.vercel.app",
 });
 
 let isRefreshing = false; // Flag to track the refresh process
