@@ -6,6 +6,7 @@ import {
   Clock,
   Calendar,
   Search,
+  Droplet,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -104,11 +105,11 @@ const HospitalHomePage: React.FC = () => {
           </Link>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6  rounded-lg shadow-md">
           <h2 className="text-2xl font-semibold text-green-700 mb-4">
             Features for Hospitals
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="flex flex-col items-center text-center">
               <Hospital className="h-12 w-12 text-green-600 mb-2" />
               <h3 className="text-lg font-semibold text-green-700 mb-1">
@@ -134,6 +135,15 @@ const HospitalHomePage: React.FC = () => {
               </h3>
               <p className="text-green-600">
                 Highlight your emergency capabilities
+              </p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <Droplet className="h-12 w-12 text-green-600 mb-2" />
+              <h3 className="text-lg font-semibold text-green-700 mb-1">
+                Blood Services
+              </h3>
+              <p className="text-green-600">
+                Track and share blood availability{" "}
               </p>
             </div>
           </div>
