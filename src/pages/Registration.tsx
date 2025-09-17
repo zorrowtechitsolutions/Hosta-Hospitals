@@ -40,7 +40,7 @@ const HospitalRegistration: React.FC = () => {
     Saturday: { open: "", close: "", isHoliday: false },
     Sunday: { open: "", close: "", isHoliday: true },
   });
-  const [otpSent, setOtpSent] = useState(false);
+  const [otpSent, setOtpSent] = useState(true);
   const [otp, setOtp] = useState("");
   const [generateOtp, setGenerateOtp] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -526,7 +526,8 @@ const HospitalRegistration: React.FC = () => {
             type="submit"
             className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
           >
-            {otpSent ? "Verify OTP & Register" : "Send OTP"}
+            {/* {otpSent ? "Verify OTP & Register" : "Send OTP"} */}
+            REGISTER
           </button>
         </form>
         <div className="mt-6 text-center">
