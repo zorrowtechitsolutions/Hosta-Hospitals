@@ -239,6 +239,8 @@ const HospitalRegistration: React.FC = () => {
                   <option value="Ayurveda">Ayurveda</option>
                   <option value="Unani">Unani</option>
                   <option value="Acupuncture">Acupuncture</option>
+                   <option value="Physiotherapy">Physiotherapy</option>
+                  <option value="Mental Health">Mental Health</option>
                   <option value="Other">Other</option>
                 </select>
               </div>
