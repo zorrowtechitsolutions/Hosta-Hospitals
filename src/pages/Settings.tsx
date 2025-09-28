@@ -15,6 +15,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../Redux/Store";
 import { errorToast, successToast } from "../Components/Toastify";
 import { DeleteConfirmationDialog } from "../Components/DeleteConfirmation";
+import { LogoutConfirmationDialog } from "../Components/LogoutConfirmation";
 
 // Define types for each component's props
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -98,6 +99,8 @@ export default function SettingsPage() {
     (state: RootState) => state.Dashboard
   );
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+    const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
+
   const [notifications, setNotifications] = useState<{
     email: boolean;
     sms: boolean;
@@ -184,6 +187,12 @@ export default function SettingsPage() {
       .then((result) => successToast(result.data.message))
       .catch((err) => console.log(err));
   };
+
+
+  const handleLogout = () => {
+     localStorage.removeItem("accessToken");
+     navigate("/");
+  }
 
   return (
     <div className="container mx-auto p-6 bg-green-50">
@@ -374,20 +383,34 @@ export default function SettingsPage() {
               <Mail className="mr-2 text-green-600" />
               <span>Current Session</span>
             </div>
-            <Button
+       
+
+              {!showLogoutConfirmation ? (
+             <Button
               className="bg-white text-green-600 border border-green-600 hover:bg-green-50"
-              onClick={async () => {
-                await apiClient
-                  .get("/api/logout", { withCredentials: true })
-                  .then(() => {
-                    localStorage.removeItem("accessToken");
-                    window.location.href = "/";
-                  })
-                  .catch((err) => console.log(err));
-              }}
+              // onClick={async () => {
+              //   await apiClient
+              //     .get("/api/logout", { withCredentials: true })
+              //     .then(() => {
+              //       localStorage.removeItem("accessToken");
+              //       window.location.href = "/";
+              //       // navigate("/");
+              //     })
+              //     .catch((err) => console.log(err));
+              // }}
+
+             onClick={() => setShowLogoutConfirmation(true)}
             >
               Log Out
             </Button>
+          ) : (
+            <LogoutConfirmationDialog
+              onCancel={() => setShowLogoutConfirmation(false)}
+              onConfirm={() => handleLogout()}
+            />
+          )}
+
+
           </div>
           {/* <div className="flex items-center justify-between p-2 bg-gray-100 rounded-lg">
             <div className="flex items-center">
