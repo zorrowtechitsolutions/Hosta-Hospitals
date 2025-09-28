@@ -50,6 +50,7 @@ interface InitialStateType {
     closing_time: string;
     is_holiday: boolean;
   }[];
+    working_hours_clinic: any
 
   reviews: any[];
   specialties: Specialty[]; // Type specialties properly here
@@ -113,6 +114,7 @@ const InitialState: InitialStateType = {
       is_holiday: false,
     },
   ],
+    working_hours_clinic: [],
   reviews: [],
   specialties: [],
   booking: [],
