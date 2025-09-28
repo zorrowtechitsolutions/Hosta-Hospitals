@@ -25,9 +25,9 @@ const EmailLogin: React.FC = () => {
       setError("Please enter both email and password.");
       return;
     }
-    await apiClient
+    await  apiClient
       .post(
-        "/api/hospital/login",
+        "/api/hospital/login/mail",
         { email: formData.email.toLowerCase(), password: formData.password },
         { withCredentials: true }
       )
