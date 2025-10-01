@@ -11,13 +11,26 @@ export interface Doctor {
   }[];
 }
 
+// export interface Specialty {
+//   _id?: string;
+//   name: string;
+//    main_specialty: string,        
+//   sub_specialty: string,  
+//   description: string;
+//   department_info: string;
+//   phone: string;
+//   doctors: Doctor[];
+// }
+
 export interface Specialty {
-  _id?: string;
+  _id: string;
   name: string;
+  main_specialty: string;
+  sub_specialt: string;
   description: string;
   department_info: string;
   phone: string;
-  doctors: Doctor[];
+  doctors: any[];
 }
 
 export interface Booking {
@@ -50,6 +63,7 @@ interface InitialStateType {
     closing_time: string;
     is_holiday: boolean;
   }[];
+    working_hours_clinic: any
 
   reviews: any[];
   specialties: Specialty[]; // Type specialties properly here
@@ -113,6 +127,7 @@ const InitialState: InitialStateType = {
       is_holiday: false,
     },
   ],
+    working_hours_clinic: [],
   reviews: [],
   specialties: [],
   booking: [],
