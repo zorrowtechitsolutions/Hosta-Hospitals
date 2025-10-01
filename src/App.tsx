@@ -15,6 +15,7 @@ import { setHospitalData } from "./Redux/Dashboard";
 import { HomeProtector, Protector } from "./Components/Protector";
 import SettingsPage from "./pages/Settings";
 import PrivacyPolicyPage from "./pages/PrivacyPolicy";
+import HospitalOtpLogin from "./pages/OtpLogin";
 
 function App() {
   const dispatch = useDispatch();
@@ -35,6 +36,8 @@ function App() {
         />
         <Route path="/registration" element={<HospitalRegistration />} />
         <Route path="/login" element={<HospitalLogin />} />
+          <Route path="/otp" element={<HospitalOtpLogin />} />
+
         <Route
           path="/newpassword"
           element={

@@ -1,3 +1,496 @@
+// import React, { useState } from "react";
+// import {
+//   Hospital,
+//   Phone,
+//   MapPin,
+//   Clock,
+//   Camera,
+//   AlertCircle,
+//   FileText,
+// } from "lucide-react";
+// import { BackButton, FormInput } from "../Components/Commen";
+// import { apiClient } from "../Components/Axios";
+// import { errorToast, successToast } from "../Components/Toastify";
+// import { useNavigate } from "react-router-dom";
+// import { useDispatch, useSelector } from "react-redux";
+// import { setHospitalData } from "../Redux/Dashboard";
+// import { RootState } from "../Redux/Store";
+
+// const HospitalProfile: React.FC = () => {
+//   const dispatch = useDispatch();
+//   const {
+//     _id,
+//     about,
+//     address,
+//     email,
+//     emergencyContact,
+//     image,
+//     latitude,
+//     longitude,
+//     name,
+//     phone,
+//     working_hours,
+//   } = useSelector((state: RootState) => state.Dashboard);
+//   const [isEditing, setIsEditing] = useState(false);
+//   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+//   const navigate = useNavigate();
+
+//   const handleChange = (
+//     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+//   ) => {
+//     const { name, value } = e.target;
+//     dispatch(setHospitalData({ [name]: value }));
+//     setErrors((prev) => ({ ...prev, [name]: "" }));
+//   };
+
+//   const handleWorkingHoursChange = (
+//     day: string,
+//     type: "open" | "close" | "holiday",
+//     value: string | boolean
+//   ) => {
+//     const index = working_hours.findIndex((element) => element.day === day);
+
+//     if (index !== -1) {
+//       // Create a new array with the updated element
+//       const updatedWorkingHours = working_hours.map((element, i) =>
+//         i === index
+//           ? {
+//               ...element,
+//               opening_time:
+//                 type === "open"
+//                   ? value
+//                   : type === "holiday"
+//                   ? ""
+//                   : element.opening_time,
+//               closing_time:
+//                 type === "close"
+//                   ? value
+//                   : type === "holiday"
+//                   ? ""
+//                   : element.closing_time,
+//               is_holiday: type === "holiday" ? value : element.is_holiday,
+//             }
+//           : element
+//       );
+//       dispatch(setHospitalData({ working_hours: updatedWorkingHours }));
+//     }
+//   };
+
+//   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const file = e.target.files?.[0];
+//     if (file) {
+//       const formData = new FormData();
+//       formData.append("image", file);
+
+//       await apiClient
+//         .post(`/api/hospital/profileImage/${_id}`, formData, {
+//           withCredentials: true,
+//         })
+//         .then((result) => {
+//           console.log(result.data.imageUrl);
+//           dispatch(setHospitalData({ image: result.data.imageUrl }));
+//         })
+//         .catch((err) => console.log("err", err));
+//     }
+//   };
+
+//   const handleSubmit = async (e: React.FormEvent) => {
+//     e.preventDefault();
+
+//     await apiClient
+//       .put(
+//         `/api/hospital/details/${_id}`,
+//         {
+//           name: name.toUpperCase(),
+//           email: email.toLowerCase(),
+//           mobile: phone,
+//           address: address,
+//           latitude: latitude,
+//           longitude: longitude,
+//           workingHours: working_hours,
+//           emergencyContact: emergencyContact,
+//           about: about,
+//         },
+//         { withCredentials: true }
+//       )
+//       .then(() => {
+//         successToast("Profile updated successfully");
+//         setIsEditing(false);
+//       })
+//       .catch((err) => {
+//         console.log(err);
+//         errorToast(err.response.data.message.message);
+//       });
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-green-50 py-12 px-4 sm:px-6 lg:px-8">
+//       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
+//         <BackButton OnClick={() => navigate("/dashboard")} />
+//         <h1 className="text-3xl font-bold text-green-800 inline-block">
+//           Profile
+//         </h1>
+//         <div className="mb-6 flex justify-center">
+//           <div className="relative">
+//             <img
+//               src={image.imageUrl}
+//               alt={name}
+//               className="w-32 h-32 rounded-full object-cover border border-green-900"
+//             />
+//             {isEditing && (
+//               <label
+//                 htmlFor="photo-upload"
+//                 className="absolute bottom-0 right-0 bg-green-600 rounded-full p-2 cursor-pointer"
+//               >
+//                 <Camera className="text-white" size={20} />
+//                 <input
+//                   id="photo-upload"
+//                   type="file"
+//                   accept="image/*"
+//                   className="hidden"
+//                   onChange={handlePhotoChange}
+//                 />
+//               </label>
+//             )}
+//           </div>
+//         </div>
+//         <form onSubmit={handleSubmit} className="space-y-6">
+//           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//             <div>
+//               <label
+//                 htmlFor="name"
+//                 className="block text-sm font-medium text-green-700"
+//               >
+//                 Hospital Name
+//               </label>
+//               <div className="mt-1 relative rounded-md shadow-sm">
+//                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+//                   <Hospital
+//                     className="h-5 w-5 text-green-500"
+//                     aria-hidden="true"
+//                   />
+//                 </div>
+//                 <FormInput
+//                   type="text"
+//                   name="name"
+//                   id="name"
+//                   value={name}
+//                   onChange={handleChange}
+//                   disabled={true}
+//                   className="pl-10 cursor-not-allowed"
+//                   placeholder="Enter hospital name"
+//                 />
+//               </div>
+//               {errors.name && (
+//                 <p className="mt-2 text-sm text-red-600">{errors.name}</p>
+//               )}
+//             </div>
+//             <div>
+//               <label
+//                 htmlFor="email"
+//                 className="block text-sm font-medium text-green-700"
+//               >
+//                 Email Address
+//               </label>
+//               <div className="mt-1 relative rounded-md shadow-sm">
+//                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+//                   <svg
+//                     className="h-5 w-5 text-green-500"
+//                     xmlns="http://www.w3.org/2000/svg"
+//                     viewBox="0 0 20 20"
+//                     fill="currentColor"
+//                     aria-hidden="true"
+//                   >
+//                     <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+//                     <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+//                   </svg>
+//                 </div>
+//                 <FormInput
+//                   type="email"
+//                   name="email"
+//                   id="email"
+//                   value={email}
+//                   disabled={true}
+//                   className="pl-10 cursor-not-allowed"
+//                   placeholder="Enter email address"
+//                 />
+//               </div>
+//             </div>
+//             <div>
+//               <label
+//                 htmlFor="mobile"
+//                 className="block text-sm font-medium text-green-700"
+//               >
+//                 Mobile Number
+//               </label>
+//               <div className="mt-1 relative rounded-md shadow-sm">
+//                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+//                   <Phone
+//                     className="h-5 w-5 text-green-500"
+//                     aria-hidden="true"
+//                   />
+//                 </div>
+//                 <FormInput
+//                   type="tel"
+//                   name="phone"
+//                   id="mobile"
+//                   value={phone}
+//                   onChange={handleChange}
+//                   disabled={!isEditing}
+//                   className="pl-10"
+//                   placeholder="Enter mobile number"
+//                 />
+//               </div>
+//               {errors.mobile && (
+//                 <p className="mt-2 text-sm text-red-600">{errors.mobile}</p>
+//               )}
+//             </div>
+//             <div>
+//               <label
+//                 htmlFor="emergencyContact"
+//                 className="block text-sm font-medium text-green-700"
+//               >
+//                 Emergency Contact
+//               </label>
+//               <div className="mt-1 relative rounded-md shadow-sm">
+//                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+//                   <AlertCircle
+//                     className="h-5 w-5 text-green-500"
+//                     aria-hidden="true"
+//                   />
+//                 </div>
+//                 <FormInput
+//                   type="tel"
+//                   name="emergencyContact"
+//                   id="emergencyContact"
+//                   value={emergencyContact}
+//                   onChange={handleChange}
+//                   disabled={!isEditing}
+//                   className="pl-10"
+//                   placeholder="Enter emergency contact number"
+//                 />
+//               </div>
+//               {errors.emergencyContact && (
+//                 <p className="mt-2 text-sm text-red-600">
+//                   {errors.emergencyContact}
+//                 </p>
+//               )}
+//             </div>
+//           </div>
+//           <div>
+//             <label
+//               htmlFor="address"
+//               className="block text-sm font-medium text-green-700"
+//             >
+//               Address
+//             </label>
+//             <div className="mt-1 relative rounded-md shadow-sm">
+//               <div className="absolute inset-y-0 left-0 pl-3 pt-3 flex items-start pointer-events-none">
+//                 <MapPin className="h-5 w-5 text-green-500" aria-hidden="true" />
+//               </div>
+//               <textarea
+//                 name="address"
+//                 id="address"
+//                 rows={3}
+//                 value={address}
+//                 onChange={handleChange}
+//                 disabled={!isEditing}
+//                 className="pl-10 shadow-sm focus:ring-green-500 focus:border-green-500 mt-1 block w-full sm:text-sm border-gray-300 rounded-md"
+//                 placeholder="Enter hospital address"
+//               />
+//             </div>
+//             {errors.address && (
+//               <p className="mt-2 text-sm text-red-600">{errors.address}</p>
+//             )}
+//           </div>
+//           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//             <div>
+//               <label
+//                 htmlFor="latitude"
+//                 className="block text-sm font-medium text-green-700"
+//               >
+//                 Latitude
+//               </label>
+//               <FormInput
+//                 type="text"
+//                 name="latitude"
+//                 id="latitude"
+//                 value={latitude}
+//                 onChange={handleChange}
+//                 disabled={!isEditing}
+//                 // pattern="/^-?(([-+]?)([\d]{1,3})((\.)(\d+))?)|(([-+]?)([\d]{1,2})((\.)(\d+))?)|(([-+]?)([\d]{1,3})((\.)(\d+))?)|180\.0+$/"
+//                 placeholder="Enter latitude"
+//               />
+//               {errors.latitude && (
+//                 <p className="mt-2 text-sm text-red-600">{errors.latitude}</p>
+//               )}
+//             </div>
+//             <div>
+//               <label
+//                 htmlFor="longitude"
+//                 className="block text-sm font-medium text-green-700"
+//               >
+//                 Longitude
+//               </label>
+//               <FormInput
+//                 type="text"
+//                 name="longitude"
+//                 id="longitude"
+//                 value={longitude}
+//                 onChange={handleChange}
+//                 disabled={!isEditing}
+//                 // pattern="/^-?(([-+]?)([\d]{1,3})((\.)(\d+))?)|(([-+]?)([\d]{1,2})((\.)(\d+))?)|(([-+]?)([\d]{1,3})((\.)(\d+))?)|180\.0+$/"
+//                 placeholder="Enter longitude"
+//               />
+//               {errors.longitude && (
+//                 <p className="mt-2 text-sm text-red-600">{errors.longitude}</p>
+//               )}
+//             </div>
+//           </div>
+//           <div>
+//             <label
+//               htmlFor="about"
+//               className="block text-sm font-medium text-green-700"
+//             >
+//               About
+//             </label>
+//             <div className="mt-1 relative rounded-md shadow-sm">
+//               <div className="absolute inset-y-0 left-0 pl-3 pt-3 flex items-start pointer-events-none">
+//                 <FileText
+//                   className="h-5 w-5 text-green-500"
+//                   aria-hidden="true"
+//                 />
+//               </div>
+//               <textarea
+//                 name="about"
+//                 id="about"
+//                 rows={4}
+//                 value={about}
+//                 onChange={handleChange}
+//                 disabled={!isEditing}
+//                 className="pl-10 shadow-sm focus:ring-green-500 focus:border-green-500 mt-1 block w-full sm:text-sm border-gray-300 rounded-md"
+//                 placeholder="Enter a description about your hospital"
+//               />
+//             </div>
+//             {errors.about && (
+//               <p className="mt-2 text-sm text-red-600">{errors.about}</p>
+//             )}
+//           </div>
+
+//           <div>
+//             <h3 className="text-lg font-medium text-green-700 mb-3">
+//               Working Hours
+//             </h3>
+//             {working_hours.map((element) => (
+//               <div
+//                 key={element.day}
+//                 className="flex items-center space-x-2 mb-2"
+//               >
+//                 <span className="w-24 text-sm text-green-700">
+//                   {element.day}
+//                 </span>
+//                 <div className="flex-1 grid grid-cols-3 gap-2">
+//                   <div className="relative">
+//                     <Clock
+//                       className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500"
+//                       size={18}
+//                     />
+//                     <input
+//                       type="time"
+//                       value={element.opening_time}
+//                       onChange={(e) =>
+//                         handleWorkingHoursChange(
+//                           element.day,
+//                           "open",
+//                           e.target.value
+//                         )
+//                       }
+//                       disabled={!isEditing || element.is_holiday}
+//                       className="pl-10 shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md"
+//                     />
+//                   </div>
+//                   <div className="relative">
+//                     <Clock
+//                       className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500"
+//                       size={18}
+//                     />
+//                     <input
+//                       type="time"
+//                       value={element.closing_time}
+//                       onChange={(e) =>
+//                         handleWorkingHoursChange(
+//                           element.day,
+//                           "close",
+//                           e.target.value
+//                         )
+//                       }
+//                       disabled={!isEditing || element.is_holiday}
+//                       className="pl-10 shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md"
+//                     />
+//                   </div>
+//                   <div className="flex items-center">
+//                     <input
+//                       type="checkbox"
+//                       id={`holiday-${element.day}`}
+//                       checked={element.is_holiday}
+//                       onChange={(e) =>
+//                         handleWorkingHoursChange(
+//                           element.day,
+//                           "holiday",
+//                           e.target.checked
+//                         )
+//                       }
+//                       disabled={!isEditing}
+//                       className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+//                     />
+//                     <label
+//                       htmlFor={`holiday-${element.day}`}
+//                       className="ml-2 block text-sm text-gray-900"
+//                     >
+//                       Holiday
+//                     </label>
+//                   </div>
+//                 </div>
+//               </div>
+//             ))}
+//           </div>
+//           <div className="flex justify-end space-x-3">
+//             {!isEditing ? (
+//               <button
+//                 type="button"
+//                 onClick={() => setIsEditing(true)}
+//                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+//               >
+//                 Edit Profile
+//               </button>
+//             ) : (
+//               <>
+//                 <button
+//                   type="button"
+//                   onClick={() => setIsEditing(false)}
+//                   className="inline-flex items-center  px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+//                 >
+//                   Cancel
+//                 </button>
+//                 <button
+//                   type="submit"
+//                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+//                 >
+//                   Save Changes
+//                 </button>
+//               </>
+//             )}
+//           </div>
+//         </form>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default HospitalProfile;
+
+
+
 import React, { useState } from "react";
 import {
   Hospital,
@@ -7,6 +500,8 @@ import {
   Camera,
   AlertCircle,
   FileText,
+  Building,
+  SquarePen
 } from "lucide-react";
 import { BackButton, FormInput } from "../Components/Commen";
 import { apiClient } from "../Components/Axios";
@@ -15,6 +510,20 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setHospitalData } from "../Redux/Dashboard";
 import { RootState } from "../Redux/Store";
+
+interface ClinicWorkingHours {
+  day: string;
+  morning_session: {
+    open: string;
+    close: string;
+  };
+  evening_session: {
+    open: string;
+    close: string;
+  };
+  is_holiday: boolean;
+  has_break: boolean;
+}
 
 const HospitalProfile: React.FC = () => {
   const dispatch = useDispatch();
@@ -30,8 +539,13 @@ const HospitalProfile: React.FC = () => {
     name,
     phone,
     working_hours,
+    working_hours_clinic,
   } = useSelector((state: RootState) => state.Dashboard);
+  
   const [isEditing, setIsEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState<"normal" | "clinic">(
+    working_hours_clinic && working_hours_clinic.length > 0 ? "clinic" : "normal"
+  );
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const navigate = useNavigate();
 
@@ -43,6 +557,7 @@ const HospitalProfile: React.FC = () => {
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  // Handle normal working hours changes
   const handleWorkingHoursChange = (
     day: string,
     type: "open" | "close" | "holiday",
@@ -51,7 +566,6 @@ const HospitalProfile: React.FC = () => {
     const index = working_hours.findIndex((element) => element.day === day);
 
     if (index !== -1) {
-      // Create a new array with the updated element
       const updatedWorkingHours = working_hours.map((element, i) =>
         i === index
           ? {
@@ -76,6 +590,48 @@ const HospitalProfile: React.FC = () => {
     }
   };
 
+  // Handle clinic working hours changes
+  const handleClinicHoursChange = (
+    day: string,
+    field: string,
+    value: string | boolean
+  ) => {
+    if (!working_hours_clinic) return;
+
+    const index = working_hours_clinic.findIndex((element: any) => element.day === day);
+
+    if (index !== -1) {
+      const updatedClinicHours = working_hours_clinic.map((element : any, i : any) => {
+        if (i === index) {
+          const updatedElement = { ...element };
+          
+          if (field === "is_holiday") {
+            updatedElement.is_holiday = value as boolean;
+          } else if (field === "has_break") {
+            updatedElement.has_break = value as boolean;
+          } else if (field.includes("morning_session")) {
+            const sessionField = field.split('.')[1] as "open" | "close";
+            updatedElement.morning_session = {
+              ...updatedElement.morning_session,
+              [sessionField]: value as string
+            };
+          } else if (field.includes("evening_session")) {
+            const sessionField = field.split('.')[1] as "open" | "close";
+            updatedElement.evening_session = {
+              ...updatedElement.evening_session,
+              [sessionField]: value as string
+            };
+          }
+          
+          return updatedElement;
+        }
+        return element;
+      });
+      
+      dispatch(setHospitalData({ working_hours_clinic: updatedClinicHours }));
+    }
+  };
+
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -97,20 +653,30 @@ const HospitalProfile: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Prepare data based on active tab
+    const requestData: any = {
+      name: name.toUpperCase(),
+      email: email.toLowerCase(),
+      mobile: phone,
+      address: address,
+      latitude: latitude,
+      longitude: longitude,
+      emergencyContact: emergencyContact,
+      about: about,
+      hasBreakSchedule: activeTab === "clinic"
+    };
+
+    // Add appropriate working hours based on active tab
+    if (activeTab === "normal") {
+      requestData.workingHours = working_hours;
+    } else {
+      requestData.workingHoursClinic = working_hours_clinic;
+    }
+
     await apiClient
       .put(
         `/api/hospital/details/${_id}`,
-        {
-          name: name.toUpperCase(),
-          email: email.toLowerCase(),
-          mobile: phone,
-          address: address,
-          latitude: latitude,
-          longitude: longitude,
-          workingHours: working_hours,
-          emergencyContact: emergencyContact,
-          about: about,
-        },
+        requestData,
         { withCredentials: true }
       )
       .then(() => {
@@ -123,26 +689,224 @@ const HospitalProfile: React.FC = () => {
       });
   };
 
+  // Initialize clinic hours if they don't exist
+  const initializeClinicHours = () => {
+    if (!working_hours_clinic || working_hours_clinic.length === 0) {
+      const defaultClinicHours: ClinicWorkingHours[] = [
+        { day: "Monday", morning_session: { open: "09:00", close: "12:00" }, evening_session: { open: "16:00", close: "21:00" }, is_holiday: false, has_break: true },
+        { day: "Tuesday", morning_session: { open: "09:00", close: "12:00" }, evening_session: { open: "16:00", close: "21:00" }, is_holiday: false, has_break: true },
+        { day: "Wednesday", morning_session: { open: "09:00", close: "12:00" }, evening_session: { open: "16:00", close: "21:00" }, is_holiday: false, has_break: true },
+        { day: "Thursday", morning_session: { open: "09:00", close: "12:00" }, evening_session: { open: "16:00", close: "21:00" }, is_holiday: false, has_break: true },
+        { day: "Friday", morning_session: { open: "09:00", close: "12:00" }, evening_session: { open: "16:00", close: "21:00" }, is_holiday: false, has_break: true },
+        { day: "Saturday", morning_session: { open: "09:00", close: "12:00" }, evening_session: { open: "16:00", close: "21:00" }, is_holiday: false, has_break: true },
+        { day: "Sunday", morning_session: { open: "", close: "" }, evening_session: { open: "", close: "" }, is_holiday: true, has_break: false },
+      ];
+      dispatch(setHospitalData({ working_hours_clinic: defaultClinicHours }));
+    }
+    setActiveTab("clinic");
+  };
+
+  // Improved mobile-responsive normal working hours
+  const renderNormalWorkingHours = () => (
+    <div className="space-y-3">
+      {working_hours.map((element) => (
+        <div 
+          key={element.day} 
+          className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 border border-green-200 rounded-lg bg-green-50"
+        >
+          {/* Day Name */}
+          <div className="w-full sm:w-24 flex-shrink-0">
+            <span className="text-sm font-medium text-green-700">{element.day}</span>
+          </div>
+          
+          {/* Time Inputs and Holiday Checkbox */}
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {/* Open Time */}
+            <div className="relative">
+              <label className="block text-xs text-green-600 mb-1 sm:sr-only">
+                Open Time
+              </label>
+              <div className="relative">
+                <Clock
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500"
+                  size={16}
+                />
+                <input
+                  type="time"
+                  value={element.opening_time}
+                  onChange={(e) =>
+                    handleWorkingHoursChange(
+                      element.day,
+                      "open",
+                      e.target.value
+                    )
+                  }
+                  disabled={!isEditing || element.is_holiday}
+                  className="pl-10 w-full px-3 py-2 text-sm border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
+              </div>
+            </div>
+
+            {/* Close Time */}
+            <div className="relative">
+              <label className="block text-xs text-green-600 mb-1 sm:sr-only">
+                Close Time
+              </label>
+              <div className="relative">
+                <Clock
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500"
+                  size={16}
+                />
+                <input
+                  type="time"
+                  value={element.closing_time}
+                  onChange={(e) =>
+                    handleWorkingHoursChange(
+                      element.day,
+                      "close",
+                      e.target.value
+                    )
+                  }
+                  disabled={!isEditing || element.is_holiday}
+                  className="pl-10 w-full px-3 py-2 text-sm border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
+              </div>
+            </div>
+
+            {/* Holiday Checkbox */}
+            <div className="flex items-center justify-start sm:justify-center">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  id={`holiday-${element.day}`}
+                  checked={element.is_holiday}
+                  onChange={(e) =>
+                    handleWorkingHoursChange(
+                      element.day,
+                      "holiday",
+                      e.target.checked
+                    )
+                  }
+                  disabled={!isEditing}
+                  className="w-4 h-4 text-green-600 border-green-300 rounded focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+                <span className="text-sm text-green-700 select-none">Holiday</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  // Improved mobile-responsive clinic working hours
+  const renderClinicWorkingHours = () => (
+    <div className="space-y-4">
+      {working_hours_clinic?.map((element : any) => (
+        <div key={element.day} className="p-4 border border-green-200 rounded-lg bg-green-50">
+          {/* Day Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+            <span className="text-sm font-medium text-green-700">{element.day}</span>
+            <div className="flex items-center space-x-4">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={element.is_holiday}
+                  onChange={(e) => handleClinicHoursChange(element.day, "is_holiday", e.target.checked)}
+                  disabled={!isEditing}
+                  className="w-4 h-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                />
+                <span className="text-sm text-green-700 select-none">Holiday</span>
+              </label>
+            </div>
+          </div>
+          
+          {!element.is_holiday && (
+            <div className="space-y-4">
+              {/* Morning Session */}
+              <div>
+                <h4 className="text-xs font-medium text-green-600 mb-2">Morning Session</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-green-500 mb-1">Open Time</label>
+                    <input
+                      type="time"
+                      value={element.morning_session.open}
+                      onChange={(e) => handleClinicHoursChange(element.day, "morning_session.open", e.target.value)} 
+                      disabled={!isEditing}
+                      className="w-full px-3 py-2 text-sm border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-green-500 mb-1">Close Time</label>
+                    <input
+                      type="time"
+                      value={element.morning_session.close}
+                      onChange={(e) => handleClinicHoursChange(element.day, "morning_session.close", e.target.value)} 
+                      disabled={!isEditing}
+                      className="w-full px-3 py-2 text-sm border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Evening Session */}
+              <div>
+                <h4 className="text-xs font-medium text-green-600 mb-2">Evening Session</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-green-500 mb-1">Open Time</label>
+                    <input
+                      type="time"
+                      value={element.evening_session.open}
+                      onChange={(e) => handleClinicHoursChange(element.day, "evening_session.open", e.target.value)} 
+                      disabled={!isEditing}
+                      className="w-full px-3 py-2 text-sm border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-green-500 mb-1">Close Time</label>
+                    <input
+                      type="time"
+                      value={element.evening_session.close}
+                      onChange={(e) => handleClinicHoursChange(element.day, "evening_session.close", e.target.value)} 
+                      disabled={!isEditing}
+                      className="w-full px-3 py-2 text-sm border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-green-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
+    <div className="min-h-screen bg-green-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-4 sm:p-6 lg:p-8">
+        <div className="flex justify-between">
         <BackButton OnClick={() => navigate("/dashboard")} />
-        <h1 className="text-3xl font-bold text-green-800 inline-block">
+        <SquarePen   onClick={() => setIsEditing(true)} />
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-green-800 mb-6 text-center">
           Profile
         </h1>
+        {/* Profile Image */}
         <div className="mb-6 flex justify-center">
           <div className="relative">
             <img
               src={image.imageUrl}
               alt={name}
-              className="w-32 h-32 rounded-full object-cover border border-green-900"
+              className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border border-green-900"
             />
             {isEditing && (
               <label
                 htmlFor="photo-upload"
                 className="absolute bottom-0 right-0 bg-green-600 rounded-full p-2 cursor-pointer"
               >
-                <Camera className="text-white" size={20} />
+                <Camera className="text-white" size={16} />
                 <input
                   id="photo-upload"
                   type="file"
@@ -154,21 +918,18 @@ const HospitalProfile: React.FC = () => {
             )}
           </div>
         </div>
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Basic Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            {/* Hospital Name */}
             <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-green-700"
-              >
+              <label htmlFor="name" className="block text-sm font-medium text-green-700">
                 Hospital Name
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Hospital
-                    className="h-5 w-5 text-green-500"
-                    aria-hidden="true"
-                  />
+                  <Hospital className="h-5 w-5 text-green-500" aria-hidden="true" />
                 </div>
                 <FormInput
                   type="text"
@@ -177,30 +938,21 @@ const HospitalProfile: React.FC = () => {
                   value={name}
                   onChange={handleChange}
                   disabled={true}
-                  className="pl-10 cursor-not-allowed"
+                  className="pl-10 cursor-not-allowed text-sm sm:text-base"
                   placeholder="Enter hospital name"
                 />
               </div>
-              {errors.name && (
-                <p className="mt-2 text-sm text-red-600">{errors.name}</p>
-              )}
+              {errors.name && <p className="mt-2 text-sm text-red-600">{errors.name}</p>}
             </div>
+
+            {/* Email */}
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-green-700"
-              >
+              <label htmlFor="email" className="block text-sm font-medium text-green-700">
                 Email Address
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg
-                    className="h-5 w-5 text-green-500"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
+                  <svg className="h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                     <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                   </svg>
@@ -211,24 +963,20 @@ const HospitalProfile: React.FC = () => {
                   id="email"
                   value={email}
                   disabled={true}
-                  className="pl-10 cursor-not-allowed"
+                  className="pl-10 cursor-not-allowed text-sm sm:text-base"
                   placeholder="Enter email address"
                 />
               </div>
             </div>
+
+            {/* Mobile */}
             <div>
-              <label
-                htmlFor="mobile"
-                className="block text-sm font-medium text-green-700"
-              >
+              <label htmlFor="mobile" className="block text-sm font-medium text-green-700">
                 Mobile Number
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Phone
-                    className="h-5 w-5 text-green-500"
-                    aria-hidden="true"
-                  />
+                  <Phone className="h-5 w-5 text-green-500" aria-hidden="true" />
                 </div>
                 <FormInput
                   type="tel"
@@ -237,27 +985,21 @@ const HospitalProfile: React.FC = () => {
                   value={phone}
                   onChange={handleChange}
                   disabled={!isEditing}
-                  className="pl-10"
+                  className="pl-10 text-sm sm:text-base"
                   placeholder="Enter mobile number"
                 />
               </div>
-              {errors.mobile && (
-                <p className="mt-2 text-sm text-red-600">{errors.mobile}</p>
-              )}
+              {errors.mobile && <p className="mt-2 text-sm text-red-600">{errors.mobile}</p>}
             </div>
+
+            {/* Emergency Contact */}
             <div>
-              <label
-                htmlFor="emergencyContact"
-                className="block text-sm font-medium text-green-700"
-              >
+              <label htmlFor="emergencyContact" className="block text-sm font-medium text-green-700">
                 Emergency Contact
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <AlertCircle
-                    className="h-5 w-5 text-green-500"
-                    aria-hidden="true"
-                  />
+                  <AlertCircle className="h-5 w-5 text-green-500" aria-hidden="true" />
                 </div>
                 <FormInput
                   type="tel"
@@ -266,22 +1008,19 @@ const HospitalProfile: React.FC = () => {
                   value={emergencyContact}
                   onChange={handleChange}
                   disabled={!isEditing}
-                  className="pl-10"
+                  className="pl-10 text-sm sm:text-base"
                   placeholder="Enter emergency contact number"
                 />
               </div>
               {errors.emergencyContact && (
-                <p className="mt-2 text-sm text-red-600">
-                  {errors.emergencyContact}
-                </p>
+                <p className="mt-2 text-sm text-red-600">{errors.emergencyContact}</p>
               )}
             </div>
           </div>
+
+          {/* Address */}
           <div>
-            <label
-              htmlFor="address"
-              className="block text-sm font-medium text-green-700"
-            >
+            <label htmlFor="address" className="block text-sm font-medium text-green-700">
               Address
             </label>
             <div className="mt-1 relative rounded-md shadow-sm">
@@ -295,20 +1034,17 @@ const HospitalProfile: React.FC = () => {
                 value={address}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="pl-10 shadow-sm focus:ring-green-500 focus:border-green-500 mt-1 block w-full sm:text-sm border-gray-300 rounded-md"
+                className="pl-10 shadow-sm focus:ring-green-500 focus:border-green-500 mt-1 block w-full sm:text-sm border-gray-300 rounded-md disabled:bg-gray-100 disabled:cursor-not-allowed"
                 placeholder="Enter hospital address"
               />
             </div>
-            {errors.address && (
-              <p className="mt-2 text-sm text-red-600">{errors.address}</p>
-            )}
+            {errors.address && <p className="mt-2 text-sm text-red-600">{errors.address}</p>}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          {/* Coordinates */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <label
-                htmlFor="latitude"
-                className="block text-sm font-medium text-green-700"
-              >
+              <label htmlFor="latitude" className="block text-sm font-medium text-green-700">
                 Latitude
               </label>
               <FormInput
@@ -318,18 +1054,13 @@ const HospitalProfile: React.FC = () => {
                 value={latitude}
                 onChange={handleChange}
                 disabled={!isEditing}
-                // pattern="/^-?(([-+]?)([\d]{1,3})((\.)(\d+))?)|(([-+]?)([\d]{1,2})((\.)(\d+))?)|(([-+]?)([\d]{1,3})((\.)(\d+))?)|180\.0+$/"
+                className="text-sm sm:text-base"
                 placeholder="Enter latitude"
               />
-              {errors.latitude && (
-                <p className="mt-2 text-sm text-red-600">{errors.latitude}</p>
-              )}
+              {errors.latitude && <p className="mt-2 text-sm text-red-600">{errors.latitude}</p>}
             </div>
             <div>
-              <label
-                htmlFor="longitude"
-                className="block text-sm font-medium text-green-700"
-              >
+              <label htmlFor="longitude" className="block text-sm font-medium text-green-700">
                 Longitude
               </label>
               <FormInput
@@ -339,27 +1070,21 @@ const HospitalProfile: React.FC = () => {
                 value={longitude}
                 onChange={handleChange}
                 disabled={!isEditing}
-                // pattern="/^-?(([-+]?)([\d]{1,3})((\.)(\d+))?)|(([-+]?)([\d]{1,2})((\.)(\d+))?)|(([-+]?)([\d]{1,3})((\.)(\d+))?)|180\.0+$/"
+                className="text-sm sm:text-base"
                 placeholder="Enter longitude"
               />
-              {errors.longitude && (
-                <p className="mt-2 text-sm text-red-600">{errors.longitude}</p>
-              )}
+              {errors.longitude && <p className="mt-2 text-sm text-red-600">{errors.longitude}</p>}
             </div>
           </div>
+
+          {/* About */}
           <div>
-            <label
-              htmlFor="about"
-              className="block text-sm font-medium text-green-700"
-            >
+            <label htmlFor="about" className="block text-sm font-medium text-green-700">
               About
             </label>
             <div className="mt-1 relative rounded-md shadow-sm">
               <div className="absolute inset-y-0 left-0 pl-3 pt-3 flex items-start pointer-events-none">
-                <FileText
-                  className="h-5 w-5 text-green-500"
-                  aria-hidden="true"
-                />
+                <FileText className="h-5 w-5 text-green-500" aria-hidden="true" />
               </div>
               <textarea
                 name="about"
@@ -368,93 +1093,74 @@ const HospitalProfile: React.FC = () => {
                 value={about}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="pl-10 shadow-sm focus:ring-green-500 focus:border-green-500 mt-1 block w-full sm:text-sm border-gray-300 rounded-md"
+                className="pl-10 shadow-sm focus:ring-green-500 focus:border-green-500 mt-1 block w-full sm:text-sm border-gray-300 rounded-md disabled:bg-gray-100 disabled:cursor-not-allowed"
                 placeholder="Enter a description about your hospital"
               />
             </div>
-            {errors.about && (
-              <p className="mt-2 text-sm text-red-600">{errors.about}</p>
-            )}
+            {errors.about && <p className="mt-2 text-sm text-red-600">{errors.about}</p>}
           </div>
 
-          <div>
-            <h3 className="text-lg font-medium text-green-700 mb-3">
-              Working Hours
-            </h3>
-            {working_hours.map((element) => (
-              <div
-                key={element.day}
-                className="flex items-center space-x-2 mb-2"
-              >
-                <span className="w-24 text-sm text-green-700">
-                  {element.day}
-                </span>
-                <div className="flex-1 grid grid-cols-3 gap-2">
-                  <div className="relative">
-                    <Clock
-                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500"
-                      size={18}
-                    />
-                    <input
-                      type="time"
-                      value={element.opening_time}
-                      onChange={(e) =>
-                        handleWorkingHoursChange(
-                          element.day,
-                          "open",
-                          e.target.value
-                        )
-                      }
-                      disabled={!isEditing || element.is_holiday}
-                      className="pl-10 shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div className="relative">
-                    <Clock
-                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500"
-                      size={18}
-                    />
-                    <input
-                      type="time"
-                      value={element.closing_time}
-                      onChange={(e) =>
-                        handleWorkingHoursChange(
-                          element.day,
-                          "close",
-                          e.target.value
-                        )
-                      }
-                      disabled={!isEditing || element.is_holiday}
-                      className="pl-10 shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`holiday-${element.day}`}
-                      checked={element.is_holiday}
-                      onChange={(e) =>
-                        handleWorkingHoursChange(
-                          element.day,
-                          "holiday",
-                          e.target.checked
-                        )
-                      }
-                      disabled={!isEditing}
-                      className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                    />
-                    <label
-                      htmlFor={`holiday-${element.day}`}
-                      className="ml-2 block text-sm text-gray-900"
+          {/* Working Hours Section */}
+          <div className="bg-green-50 p-4 rounded-lg">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
+              <h3 className="text-lg font-medium text-green-700">
+                Working Hours
+              </h3>
+              {isEditing && (
+                <div className="flex space-x-2">
+                  {activeTab === "normal" && (
+                    <button
+                      type="button"
+                      onClick={initializeClinicHours}
+                      className="px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 border border-green-600 text-green-600 hover:bg-green-50 focus:ring-green-500 rounded-md whitespace-nowrap"
                     >
-                      Holiday
-                    </label>
-                  </div>
+                      Switch to Clinic Schedule
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Tabs */}
+            {isEditing && (
+              <div className="mb-4">
+                <div className="flex border-b border-green-200 overflow-x-auto">
+                  <button
+                    type="button"
+                    className={`flex items-center px-4 py-3 text-sm font-medium whitespace-nowrap ${
+                      activeTab === "normal"
+                        ? "border-b-2 border-green-600 text-green-600 bg-green-100"
+                        : "text-green-500 hover:text-green-700 hover:bg-green-50"
+                    }`}
+                    onClick={() => setActiveTab("normal")}
+                  >
+                    <Building size={16} className="mr-2" />
+                    Normal Hospital
+                  </button>
+                  <button
+                    type="button"
+                    className={`flex items-center px-4 py-3 text-sm font-medium whitespace-nowrap ${
+                      activeTab === "clinic"
+                        ? "border-b-2 border-green-600 text-green-600 bg-green-100"
+                        : "text-green-500 hover:text-green-700 hover:bg-green-50"
+                    }`}
+                    onClick={() => setActiveTab("clinic")}
+                  >
+                    <Building size={16} className="mr-2" />
+                    Clinic
+                  </button>
                 </div>
               </div>
-            ))}
+            )}
+
+            {/* Tab Content */}
+            <div className="mt-4">
+              {activeTab === "normal" ? renderNormalWorkingHours() : renderClinicWorkingHours()}
+            </div>
           </div>
-          <div className="flex justify-end space-x-3">
+
+          {/* Action Buttons */}
+          <div className="flex justify-end space-x-3 pt-4">
             {!isEditing ? (
               <button
                 type="button"
@@ -468,7 +1174,7 @@ const HospitalProfile: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="inline-flex items-center  px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                 >
                   Cancel
                 </button>
