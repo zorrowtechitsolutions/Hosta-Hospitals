@@ -11,13 +11,26 @@ export interface Doctor {
   }[];
 }
 
+// export interface Specialty {
+//   _id?: string;
+//   name: string;
+//    main_specialty: string,        
+//   sub_specialty: string,  
+//   description: string;
+//   department_info: string;
+//   phone: string;
+//   doctors: Doctor[];
+// }
+
 export interface Specialty {
-  _id?: string;
+  _id: string;
   name: string;
+  main_specialty: string;
+  sub_specialt: string;
   description: string;
   department_info: string;
   phone: string;
-  doctors: Doctor[];
+  doctors: any[];
 }
 
 export interface Booking {
