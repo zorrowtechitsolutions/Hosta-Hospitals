@@ -417,31 +417,41 @@ const DoctorManagement: React.FC = () => {
 
                         {/* Collapsible Consulting Hours */}
                         {isOpen && (
-                          <div>
-                            <h4 className="font-semibold text-green-700 mb-2">
-                              Consulting Hours:
-                            </h4>
-                            <ul className="space-y-1">
-                              {doctor.consulting.map((cDay, dIdx) => (
-                                <li key={dIdx} className="text-green-600">
-                                  <span className="font-medium">
-                                    {cDay.day}:
-                                  </span>{" "}
-                                  {cDay.sessions
-                                    .map(
-                                      (session) =>
-                                        `${convertTo12HourFormat(
-                                          session.start_time
-                                        )} - ${convertTo12HourFormat(
-                                          session.end_time
-                                        )}`
-                                    )
-                                    .join(", ")}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
+                            <div>
+                              <h4 className="font-semibold text-green-700 mb-3">
+                                Consulting Hours:
+                              </h4>
+                              <div className="space-y-2">
+                                {doctor.consulting.map((cDay, dIdx) => (
+                                  <div
+                                    key={dIdx}
+                                    className="grid grid-cols-3 gap-4 items-center border-b border-green-100 pb-2"
+                                  >
+                                    {/* Day */}
+                                    <div className="text-gray-800 font-medium">{cDay.day}</div>
+                          
+                                    {/* First slot */}
+                                    <div className="text-green-600">
+                                      {cDay.sessions[0]
+                                        ? `${convertTo12HourFormat(
+                                            cDay.sessions[0].start_time
+                                          )} - ${convertTo12HourFormat(cDay.sessions[0].end_time)}`
+                                        : "--"}
+                                    </div>
+                          
+                                    {/* Second slot */}
+                                    <div className="text-green-600">
+                                      {cDay.sessions[1]
+                                        ? `${convertTo12HourFormat(
+                                            cDay.sessions[1].start_time
+                                          )} - ${convertTo12HourFormat(cDay.sessions[1].end_time)}`
+                                        : "--"}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                       </div>
                     );
                   })}
