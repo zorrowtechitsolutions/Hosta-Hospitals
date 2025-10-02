@@ -77,6 +77,8 @@ const DoctorManagement: React.FC = () => {
     consulting: [emptyDay()],
   });
 
+  const [isOpen, setIsOpen] = useState<boolean>(false)
+
   // Filtered specialties (typed)
   const filteredSpecialties = (specialties || []).filter(
     (specialty: Specialty) => {
@@ -359,7 +361,7 @@ const DoctorManagement: React.FC = () => {
                 {specialty.doctors
                   .filter(doctorMatchesFilters)
                   .map((doctor: Doctor) => {
-                    const [isOpen, setIsOpen] = useState<boolean>(false);
+                    ;
 
                     return (
                       <div
