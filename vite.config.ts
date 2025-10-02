@@ -8,8 +8,8 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "Your App Name",
-        short_name: "AppName",
+        name: "Hosta Hospitals",
+        short_name: "Hosta",
         description: "Your App Description",
         theme_color: "#ffffff",
         background_color: "#ffffff",
