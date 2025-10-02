@@ -1,89 +1,234 @@
-import React, { useState } from "react";
-import { Mail, Lock, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react";
+
+
+// export default PasswordReset;
+import React, { useState, useEffect, useRef } from "react";
+import { Phone, Lock, CheckCircle, AlertCircle, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { BackButton } from "../Components/Commen";
 import { useNavigate } from "react-router-dom";
 import { apiClient } from "../Components/Axios";
 
 const PasswordReset: React.FC = () => {
   const [formData, setFormData] = useState({
-    email: "",
-    otp: "",
+    phone: "",
+    otp: ["", "", "", "", "", ""],
     newPassword: "",
     confirmPassword: "",
   });
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [randomNumber, setReandomNumber] = useState("");
+  const [timer, setTimer] = useState(60);
+  const [isResendDisabled, setIsResendDisabled] = useState(true);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  // Countdown timer effect
+  useEffect(() => {
+    let interval: any;
+    if (isResendDisabled && timer > 0) {
+      interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+    } else if (timer === 0) {
+      setIsResendDisabled(false);
+    }
+    return () => clearInterval(interval);
+  }, [isResendDisabled, timer]);
+
+  const handlePhoneSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (!formData.email) {
-      setError("Please enter your email address.");
+    
+    if (!formData.phone) {
+      setError("Please enter your phone number.");
       return;
     }
-    // Simulate sending OTP
-    const generateOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    setReandomNumber(generateOtp);
+
+    if (!/^\d{10}$/.test(formData.phone)) {
+      setError("Please enter a valid 10-digit phone number.");
+      return;
+    }
+
+    // Send OTP to phone
     apiClient
-      .post(
-        "/api/email",
-        {
-          from: "hostahelthcare@gmail.com",
-          to: formData.email.toLowerCase(),
-          subject: "Reset Password",
-          text: `Otp for reseting your password is ${generateOtp}`,
-        },
-        { withCredentials: true }
-      )
+      .post("/api/hospital/login", { phone: formData.phone }, { withCredentials: true })
       .then(() => {
         setStep(2);
-        setSuccess("OTP sent to your email address.");
+        setSuccess("OTP sent to your phone number.");
+        setIsResendDisabled(true);
+        setTimer(60);
+        // Focus first OTP input when moving to step 2
+        setTimeout(() => {
+          otpInputRefs.current[0]?.focus();
+        }, 100);
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err);
+        setError("Failed to send OTP. Please try again.");
+      });
+  };
+
+  const handleResendOtp = () => {
+    if (!/^\d{10}$/.test(formData.phone)) {
+      setError("Please enter a valid 10-digit phone number.");
+      return;
+    }
+
+    apiClient
+      .post("/api/hospital/login", { phone: formData.phone }, { withCredentials: true })
+      .then(() => {
+        setSuccess("OTP resent to your phone number.");
+        setIsResendDisabled(true);
+        setTimer(60);
+        // Reset OTP fields and focus first input
+        setFormData(prev => ({ ...prev, otp: ["", "", "", "", "", ""] }));
+        setTimeout(() => {
+          otpInputRefs.current[0]?.focus();
+        }, 100);
+      })
+      .catch((err) => {
+        console.log(err);
+        setError("Failed to resend OTP. Please try again.");
+      });
+  };
+
+  const handleOtpChange = (index: number, value: string) => {
+    // Allow only numbers
+    if (value && !/^\d+$/.test(value)) return;
+
+    const newOtp = [...formData.otp];
+    
+    // Handle paste event (multiple digits)
+    if (value.length > 1) {
+      const pastedDigits = value.split('').slice(0, 6 - index);
+      pastedDigits.forEach((digit, digitIndex) => {
+        if (index + digitIndex < 6) {
+          newOtp[index + digitIndex] = digit;
+        }
+      });
+      
+      setFormData(prev => ({ ...prev, otp: newOtp }));
+      
+      // Focus next empty input or last input
+      const nextIndex = Math.min(index + pastedDigits.length, 5);
+      otpInputRefs.current[nextIndex]?.focus();
+      return;
+    }
+
+    // Single digit input
+    newOtp[index] = value;
+    setFormData(prev => ({ ...prev, otp: newOtp }));
+
+    // Auto-focus next input
+    if (value && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Handle backspace
+    if (e.key === 'Backspace') {
+      if (!formData.otp[index] && index > 0) {
+        // Move to previous input if current is empty
+        otpInputRefs.current[index - 1]?.focus();
+      }
+      
+      const newOtp = [...formData.otp];
+      newOtp[index] = "";
+      setFormData(prev => ({ ...prev, otp: newOtp }));
+
+      if (index > 0 && !formData.otp[index]) {
+        otpInputRefs.current[index - 1]?.focus();
+      }
+    }
+
+    // Handle arrow keys for navigation
+    if (e.key === 'ArrowLeft' && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+    if (e.key === 'ArrowRight' && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text');
+    const pastedDigits = pastedData.replace(/\D/g, '').split('').slice(0, 6);
+    
+    if (pastedDigits.length > 0) {
+      const newOtp = [...formData.otp];
+      pastedDigits.forEach((digit, index) => {
+        if (index < 6) {
+          newOtp[index] = digit;
+        }
+      });
+      
+      setFormData(prev => ({ ...prev, otp: newOtp }));
+      
+      // Focus next empty input or last input
+      const nextIndex = Math.min(pastedDigits.length, 5);
+      otpInputRefs.current[nextIndex]?.focus();
+    }
+  };
+
+  const getOtpString = () => {
+    return formData.otp.join('');
   };
 
   const handleOtpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (!formData.otp) {
-      setError("Please enter the OTP.");
+    
+    const otpString = getOtpString();
+    if (!otpString || otpString.length !== 6) {
+      setError("Please enter the complete 6-digit OTP.");
       return;
     }
-    // Simulate OTP verification
-    if (formData.otp === randomNumber) {
-      // In a real app, this would be validated against a server
-      setStep(3);
-      setSuccess("OTP verified successfully.");
-    } else {
-      setError("Invalid OTP. Please try again.");
-    }
+
+    // Verify OTP
+    apiClient
+      .post(
+        "/api/hospital/otp",
+        { phone: formData.phone, otp: otpString },
+        { withCredentials: true }
+      )
+      .then(() => {
+        setStep(3);
+        setSuccess("OTP verified successfully.");
+      })
+      .catch((err) => {
+        console.log(err);
+        setError("Invalid OTP. Please try again.");
+      });
   };
 
   const handlePasswordReset = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    
     if (!formData.newPassword || !formData.confirmPassword) {
       setError("Please enter and confirm your new password.");
       return;
     }
+    
     if (formData.newPassword !== formData.confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
+    
     if (formData.newPassword.length < 8) {
       setError("Password must be at least 8 characters long.");
       return;
     }
-    // Simulate password reset
+
+    // Reset password
     apiClient
       .post(
         "/api/hospital/password",
         {
-          email: formData.email.toLowerCase(),
+          phone: formData.phone,
           password: formData.newPassword,
         },
         { withCredentials: true }
@@ -92,35 +237,47 @@ const PasswordReset: React.FC = () => {
         setStep(4);
         setSuccess("Password reset successfully.");
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err);
+        setError("Failed to reset password. Please try again.");
+      });
+  };
+
+  const toggleNewPasswordVisibility = () => {
+    setShowNewPassword(!showNewPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
   };
 
   const renderStep = () => {
     switch (step) {
       case 1:
         return (
-          <form onSubmit={handleEmailSubmit} className="space-y-4">
+          <form onSubmit={handlePhoneSubmit} className="space-y-4">
             <div>
               <label
-                htmlFor="email"
+                htmlFor="phone"
                 className="block text-sm font-medium text-green-700 mb-1"
               >
-                Email Address
+                Phone Number
               </label>
               <div className="relative">
-                <Mail
+                <Phone
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600"
                   size={18}
                 />
                 <input
-                  type="email"
-                  id="email"
-                  value={formData.email}
+                  type="tel"
+                  id="phone"
+                  value={formData.phone}
                   onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
+                    setFormData({ ...formData, phone: e.target.value })
                   }
                   className="pl-10 w-full px-3 py-2 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Enter your email"
+                  placeholder="Enter your 10-digit phone number"
+                  maxLength={10}
                   required
                 />
               </div>
@@ -135,30 +292,42 @@ const PasswordReset: React.FC = () => {
         );
       case 2:
         return (
-          <form onSubmit={handleOtpSubmit} className="space-y-4">
+          <form onSubmit={handleOtpSubmit} className="space-y-6">
             <div>
-              <label
-                htmlFor="otp"
-                className="block text-sm font-medium text-green-700 mb-1"
-              >
-                Enter OTP
+              <label className="block text-sm font-medium text-green-700 mb-3 text-center">
+                Enter 6-digit OTP
               </label>
-              <div className="relative">
-                <CheckCircle
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600"
-                  size={18}
-                />
-                <input
-                  type="text"
-                  id="otp"
-                  value={formData.otp}
-                  onChange={(e) =>
-                    setFormData({ ...formData, otp: e.target.value })
-                  }
-                  className="pl-10 w-full px-3 py-2 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Enter OTP"
-                  required
-                />
+              <div className="flex justify-center space-x-2">
+                {formData.otp.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={(el) => (otpInputRefs.current[index] = el)}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={index === 5 ? 1 : 6} // Allow paste on first input
+                    value={digit}
+                    onChange={(e) => handleOtpChange(index, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                    onPaste={index === 0 ? handleOtpPaste : undefined} // Only handle paste on first input
+                    className="w-12 h-12 text-center text-xl font-semibold border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white"
+                    autoComplete="one-time-code"
+                  />
+                ))}
+              </div>
+              <div className="mt-4 text-center">
+                {isResendDisabled ? (
+                  <p className="text-green-600 text-sm">
+                    Resend OTP in {timer}s
+                  </p>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    className="text-green-600 hover:text-green-800 text-sm font-medium"
+                  >
+                    Resend OTP
+                  </button>
+                )}
               </div>
             </div>
             <button
@@ -185,16 +354,23 @@ const PasswordReset: React.FC = () => {
                   size={18}
                 />
                 <input
-                  type="password"
+                  type={showNewPassword ? "text" : "password"}
                   id="newPassword"
                   value={formData.newPassword}
                   onChange={(e) =>
                     setFormData({ ...formData, newPassword: e.target.value })
                   }
-                  className="pl-10 w-full px-3 py-2 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="pl-10 pr-10 w-full px-3 py-2 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="Enter new password"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={toggleNewPasswordVisibility}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600 hover:text-green-800 focus:outline-none"
+                >
+                  {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
             <div>
@@ -210,7 +386,7 @@ const PasswordReset: React.FC = () => {
                   size={18}
                 />
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   id="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={(e) =>
@@ -219,10 +395,17 @@ const PasswordReset: React.FC = () => {
                       confirmPassword: e.target.value,
                     })
                   }
-                  className="pl-10 w-full px-3 py-2 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="pl-10 pr-10 w-full px-3 py-2 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="Confirm new password"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={toggleConfirmPasswordVisibility}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600 hover:text-green-800 focus:outline-none"
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
             <button
@@ -244,7 +427,7 @@ const PasswordReset: React.FC = () => {
               Your password has been successfully reset.
             </p>
             <button
-              onClick={() => (window.location.href = "/login")}
+              onClick={() => navigate("/login")}
               className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -258,8 +441,8 @@ const PasswordReset: React.FC = () => {
   return (
     <div className="min-h-screen bg-green-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
-        <div className="relative mb-6 flex items-center justify-center">
           <BackButton OnClick={() => navigate("/")} />
+        <div className="relative mb-6 flex items-center justify-center">
           <h2 className="text-3xl font-bold text-green-800">Reset Password</h2>
         </div>
         {error && (
