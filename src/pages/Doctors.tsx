@@ -41,14 +41,19 @@ interface Specialty {
   doctors: Doctor[];
 }
 
-const emptySession = (): ConsultingSession => ({ start_time: "", end_time: "" });
+const emptySession = (): ConsultingSession => ({
+  start_time: "",
+  end_time: "",
+});
 const emptyDay = (): ConsultingDay => ({ day: "", sessions: [emptySession()] });
 
 const DoctorManagement: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   // cast Dashboard slice for safer typing here (adjust if your RootState has a different shape)
-  const { specialties, _id } = useSelector((state: RootState) => state.Dashboard) as {
+  const { specialties, _id } = useSelector(
+    (state: RootState) => state.Dashboard
+  ) as {
     specialties: Specialty[];
     _id: string;
   };
@@ -56,7 +61,8 @@ const DoctorManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>("");
   const [selectedDay, setSelectedDay] = useState<string>("");
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<boolean>(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] =
+    useState<boolean>(false);
   const [doctorToDelete, setDoctorToDelete] = useState<{
     specialtyName: string;
     doctorId: string;
@@ -72,30 +78,34 @@ const DoctorManagement: React.FC = () => {
   });
 
   // Filtered specialties (typed)
-  const filteredSpecialties = (specialties || []).filter((specialty: Specialty) => {
-    // specialty-level filters (searchTerm, selectedSpecialty, selectedDay)
-    const matchesSpecialty =
-      selectedSpecialty === "" ||
-      specialty.name.toLowerCase() === selectedSpecialty.toLowerCase();
+  const filteredSpecialties = (specialties || []).filter(
+    (specialty: Specialty) => {
+      // specialty-level filters (searchTerm, selectedSpecialty, selectedDay)
+      const matchesSpecialty =
+        selectedSpecialty === "" ||
+        specialty.name.toLowerCase() === selectedSpecialty.toLowerCase();
 
-    const hasDoctors = (specialty.doctors || []).length > 0;
+      const hasDoctors = (specialty.doctors || []).length > 0;
 
-    const matchesSearch = (searchTerm === "" ||
-      specialty.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      specialty.doctors.some((doctor: Doctor) =>
-        doctor.name.toLowerCase().includes(searchTerm.toLowerCase())
-      ));
+      const matchesSearch =
+        searchTerm === "" ||
+        specialty.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        specialty.doctors.some((doctor: Doctor) =>
+          doctor.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
 
-    const matchesDay =
-      selectedDay === "" ||
-      specialty.doctors.some((doctor: Doctor) =>
-        doctor.consulting.some((cDay: ConsultingDay) =>
-          cDay.day.toLowerCase() === selectedDay.toLowerCase()
-        )
-      );
+      const matchesDay =
+        selectedDay === "" ||
+        specialty.doctors.some((doctor: Doctor) =>
+          doctor.consulting.some(
+            (cDay: ConsultingDay) =>
+              cDay.day.toLowerCase() === selectedDay.toLowerCase()
+          )
+        );
 
-    return matchesSpecialty && hasDoctors && matchesSearch && matchesDay;
-  });
+      return matchesSpecialty && hasDoctors && matchesSearch && matchesDay;
+    }
+  );
 
   const handleDeleteDoctor = (specialtyName: string, doctorId: string) => {
     setDoctorToDelete({ specialtyName, doctorId });
@@ -133,7 +143,8 @@ const DoctorManagement: React.FC = () => {
     // clone to avoid mutating original
     const clone = JSON.parse(JSON.stringify(doctor)) as Doctor;
     // ensure at least one day exists
-    if (!clone.consulting || clone.consulting.length === 0) clone.consulting = [emptyDay()];
+    if (!clone.consulting || clone.consulting.length === 0)
+      clone.consulting = [emptyDay()];
     setEditingDoctor(doctor);
     setFormData(clone);
     setIsFormOpen(true);
@@ -151,14 +162,22 @@ const DoctorManagement: React.FC = () => {
 
     try {
       if (editingDoctor) {
-        const result = await apiClient.put(`/api/hospital/doctor/${_id}`, payload, {
-          withCredentials: true,
-        });
+        const result = await apiClient.put(
+          `/api/hospital/doctor/${_id}`,
+          payload,
+          {
+            withCredentials: true,
+          }
+        );
         dispatch(setHospitalData({ specialties: result.data.data }));
       } else {
-        const result = await apiClient.post(`/api/hospital/doctor/${_id}`, payload, {
-          withCredentials: true,
-        });
+        const result = await apiClient.post(
+          `/api/hospital/doctor/${_id}`,
+          payload,
+          {
+            withCredentials: true,
+          }
+        );
         dispatch(setHospitalData({ specialties: result.data.data }));
       }
       setIsFormOpen(false);
@@ -168,14 +187,19 @@ const DoctorManagement: React.FC = () => {
   };
 
   // Top-level inputs (name, qualification, specialty)
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // Day-level handlers
   const addConsultingDay = () => {
-    setFormData((prev) => ({ ...prev, consulting: [...prev.consulting, emptyDay()] }));
+    setFormData((prev) => ({
+      ...prev,
+      consulting: [...prev.consulting, emptyDay()],
+    }));
   };
 
   const removeConsultingDay = (dayIndex: number) => {
@@ -208,8 +232,13 @@ const DoctorManagement: React.FC = () => {
     setFormData((prev) => {
       const newConsulting = prev.consulting.map((c, i) => {
         if (i !== dayIndex) return c;
-        const newSessions = c.sessions.filter((_, sIdx) => sIdx !== sessionIndex);
-        return { ...c, sessions: newSessions.length ? newSessions : [emptySession()] }; // ensure at least one session
+        const newSessions = c.sessions.filter(
+          (_, sIdx) => sIdx !== sessionIndex
+        );
+        return {
+          ...c,
+          sessions: newSessions.length ? newSessions : [emptySession()],
+        }; // ensure at least one session
       });
       return { ...prev, consulting: newConsulting };
     });
@@ -240,7 +269,9 @@ const DoctorManagement: React.FC = () => {
       doctor.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDay =
       selectedDay === "" ||
-      doctor.consulting.some((cDay) => cDay.day.toLowerCase() === selectedDay.toLowerCase());
+      doctor.consulting.some(
+        (cDay) => cDay.day.toLowerCase() === selectedDay.toLowerCase()
+      );
     return matchesName && matchesDay;
   };
 
@@ -257,7 +288,9 @@ const DoctorManagement: React.FC = () => {
             type="text"
             placeholder="Search doctors..."
             value={searchTerm}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSearchTerm(e.target.value)
+            }
             className="pl-10 w-full"
           />
           <Search
@@ -307,62 +340,109 @@ const DoctorManagement: React.FC = () => {
 
       {filteredSpecialties.length === 0 ? (
         <div className="text-center text-gray-600 mt-8">
-          No doctors found. Please adjust your search criteria or add a new doctor.
+          No doctors found. Please adjust your search criteria or add a new
+          doctor.
         </div>
       ) : (
         filteredSpecialties.map((specialty: Specialty) =>
           specialty.doctors.length > 0 ? (
-            <Card key={specialty._id} className="mb-6 bg-white border-green-300">
+            <Card
+              key={specialty._id}
+              className="mb-6 bg-white border-green-300"
+            >
               <CardHeader className="bg-green-100 mb-4">
-                <CardTitle className="text-green-800">{specialty.name}</CardTitle>
+                <CardTitle className="text-green-800">
+                  {specialty.name}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 {specialty.doctors
                   .filter(doctorMatchesFilters)
-                  .map((doctor: Doctor) => (
-                    <div
-                      key={doctor._id ?? doctor.name}
-                      className="mb-4 p-4 border border-green-200 rounded-lg hover:bg-green-50 transition-colors"
-                    >
-                      <div className="flex justify-between items-center mb-2">
-                        <h3 className="text-xl font-semibold text-green-800">{doctor.name}</h3>
-                        <div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="mr-2 text-green-600 border-green-600 hover:bg-green-100"
-                            onClick={() => handleEditDoctor(doctor)}
-                          >
-                            <Edit size={16} />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-red-600 border-red-600 hover:bg-red-100"
-                            onClick={() => handleDeleteDoctor(specialty.name, doctor._id as string)}
-                          >
-                            <Trash2 size={16} />
-                          </Button>
+                  .map((doctor: Doctor) => {
+                    const [isOpen, setIsOpen] = useState<boolean>(false);
+
+                    return (
+                      <div
+                        key={doctor._id ?? doctor.name}
+                        className="mb-4 p-4 border border-green-200 rounded-lg hover:bg-green-50 transition-colors"
+                      >
+                        {/* Doctor Header */}
+                        <div className="flex justify-between items-center mb-2">
+                          <h3 className="text-xl font-semibold text-green-800">
+                            {doctor.name}
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-green-600 border-green-600 hover:bg-green-100"
+                              onClick={() => setIsOpen((prev) => !prev)}
+                            >
+                              {isOpen
+                                ? "Hide Consulting Hours"
+                                : "Show Consulting Hours"}
+                            </Button>
+
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="mr-2 text-green-600 border-green-600 hover:bg-green-100"
+                              onClick={() => handleEditDoctor(doctor)}
+                            >
+                              <Edit size={16} />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-600 border-red-600 hover:bg-red-100"
+                              onClick={() =>
+                                handleDeleteDoctor(
+                                  specialty.name,
+                                  doctor._id as string
+                                )
+                              }
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </div>
                         </div>
-                      </div>
 
-                      {doctor.qualification && (
-                        <p className="text-green-700 mb-2">Qualification: {doctor.qualification}</p>
-                      )}
-
-                      <h4 className="font-semibold text-green-700 mb-2">Consulting Hours:</h4>
-                      <ul className="space-y-1">
-                        {doctor.consulting.map((cDay: ConsultingDay, dIdx: number) =>
-                          cDay.sessions.map((session: ConsultingSession, sIdx: number) => (
-                            <li key={`${dIdx}-${sIdx}`} className="text-green-600">
-                              {cDay.day}: {convertTo12HourFormat(session.start_time)} -{" "}
-                              {convertTo12HourFormat(session.end_time)}
-                            </li>
-                          ))
+                        {doctor.qualification && (
+                          <p className="text-green-700 mb-2">
+                            Qualification: {doctor.qualification}
+                          </p>
                         )}
-                      </ul>
-                    </div>
-                  ))}
+
+                        {/* Collapsible Consulting Hours */}
+                        {isOpen && (
+                          <div>
+                            <h4 className="font-semibold text-green-700 mb-2">
+                              Consulting Hours:
+                            </h4>
+                            <ul className="space-y-1">
+                              {doctor.consulting.map((cDay, dIdx) => (
+                                <li key={dIdx} className="text-green-600">
+                                  <span className="font-medium">
+                                    {cDay.day}:
+                                  </span>{" "}
+                                  {cDay.sessions
+                                    .map(
+                                      (session) =>
+                                        `${convertTo12HourFormat(
+                                          session.start_time
+                                        )} - ${convertTo12HourFormat(
+                                          session.end_time
+                                        )}`
+                                    )
+                                    .join(", ")}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
               </CardContent>
             </Card>
           ) : null
@@ -418,76 +498,113 @@ const DoctorManagement: React.FC = () => {
                   ))}
                 </Select>
 
-                <h3 className="font-semibold text-green-700 mb-2">Consulting Hours:</h3>
+                <h3 className="font-semibold text-green-700 mb-2">
+                  Consulting Hours:
+                </h3>
 
-                {formData.consulting.map((daySlot: ConsultingDay, dayIndex: number) => (
-                  <div key={dayIndex} className="mb-4 p-4 border border-green-200 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Select
-                        value={daySlot.day}
-                        onChange={(e) => handleDayChange(dayIndex, e.target.value)}
-                        className="flex-1"
-                        required
-                      >
-                        <option value="">Select Day</option>
-                        <option value="Monday">Monday</option>
-                        <option value="Tuesday">Tuesday</option>
-                        <option value="Wednesday">Wednesday</option>
-                        <option value="Thursday">Thursday</option>
-                        <option value="Friday">Friday</option>
-                        <option value="Saturday">Saturday</option>
-                        <option value="Sunday">Sunday</option>
-                      </Select>
-
-                      <Button
-                        type="button"
-                        onClick={() => removeConsultingDay(dayIndex)}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        <X size={16} className="mr-1" />
-                        Remove Day
-                      </Button>
-                    </div>
-
-                    {daySlot.sessions.map((session: ConsultingSession, sessionIndex: number) => (
-                      <div key={sessionIndex} className="mb-2 flex items-center gap-2">
-                        <FormInput
-                          type="time"
-                          value={session.start_time}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                            handleSessionChange(dayIndex, sessionIndex, "start_time", e.target.value)
+                {formData.consulting.map(
+                  (daySlot: ConsultingDay, dayIndex: number) => (
+                    <div
+                      key={dayIndex}
+                      className="mb-4 p-4 border border-green-200 rounded-lg"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <Select
+                          value={daySlot.day}
+                          onChange={(e) =>
+                            handleDayChange(dayIndex, e.target.value)
                           }
                           className="flex-1"
-                        />
-                        <FormInput
-                          type="time"
-                          value={session.end_time}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                            handleSessionChange(dayIndex, sessionIndex, "end_time", e.target.value)
-                          }
-                          className="flex-1"
-                        />
+                          required
+                        >
+                          <option value="">Select Day</option>
+                          <option value="Monday">Monday</option>
+                          <option value="Tuesday">Tuesday</option>
+                          <option value="Wednesday">Wednesday</option>
+                          <option value="Thursday">Thursday</option>
+                          <option value="Friday">Friday</option>
+                          <option value="Saturday">Saturday</option>
+                          <option value="Sunday">Sunday</option>
+                        </Select>
+
                         <Button
                           type="button"
-                          onClick={() => removeConsultingSession(dayIndex, sessionIndex)}
+                          onClick={() => removeConsultingDay(dayIndex)}
                           className="text-red-600 hover:text-red-800"
                         >
-                          <X size={16} />
+                          <X size={16} className="mr-1" />
+                          Remove Day
                         </Button>
                       </div>
-                    ))}
 
-                    <div className="flex gap-2">
-                      <Button type="button" onClick={() => addConsultingSession(dayIndex)}>
-                        <Plus size={16} className="mr-1" />
-                        Add Session
-                      </Button>
+                      {daySlot.sessions.map(
+                        (session: ConsultingSession, sessionIndex: number) => (
+                          <div
+                            key={sessionIndex}
+                            className="mb-2 flex items-center gap-2"
+                          >
+                            <FormInput
+                              type="time"
+                              value={session.start_time}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                handleSessionChange(
+                                  dayIndex,
+                                  sessionIndex,
+                                  "start_time",
+                                  e.target.value
+                                )
+                              }
+                              className="flex-1"
+                            />
+                            <FormInput
+                              type="time"
+                              value={session.end_time}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                handleSessionChange(
+                                  dayIndex,
+                                  sessionIndex,
+                                  "end_time",
+                                  e.target.value
+                                )
+                              }
+                              className="flex-1"
+                            />
+                            <Button
+                              type="button"
+                              onClick={() =>
+                                removeConsultingSession(dayIndex, sessionIndex)
+                              }
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              <X size={16} />
+                            </Button>
+                          </div>
+                        )
+                      )}
+
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          onClick={() => addConsultingSession(dayIndex)}
+                        >
+                          <Plus size={16} className="mr-1" />
+                          Add Session
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
 
                 <div className="mb-4">
-                  <Button type="button" onClick={addConsultingDay} className="text-green-600">
+                  <Button
+                    type="button"
+                    onClick={addConsultingDay}
+                    className="text-green-600"
+                  >
                     <Plus size={16} className="mr-1" />
                     Add Consulting Day
                   </Button>
@@ -502,7 +619,10 @@ const DoctorManagement: React.FC = () => {
                     Cancel
                   </Button>
 
-                  <Button type="submit" className="bg-green-600 text-white hover:bg-green-700">
+                  <Button
+                    type="submit"
+                    className="bg-green-600 text-white hover:bg-green-700"
+                  >
                     {editingDoctor ? "Update Doctor" : "Add Doctor"}
                   </Button>
                 </div>

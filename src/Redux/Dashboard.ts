@@ -1,36 +1,37 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+// A session for a given day
+export interface Session {
+  _id?: string;
+  start_time: string;
+  end_time: string;
+}
+
+// A doctor's consulting availability per day
+export interface ConsultingDay {
+  _id?: string;
+  day: string;
+  sessions: Session[];
+}
+
+// A doctor belongs to a specialty
 export interface Doctor {
   _id?: string;
   name: string;
   qualification?: string;
-  consulting: {
-    day: string;
-    start_time: string;
-    end_time: string;
-  }[];
+  consulting: ConsultingDay[];
 }
 
-// export interface Specialty {
-//   _id?: string;
-//   name: string;
-//    main_specialty: string,        
-//   sub_specialty: string,  
-//   description: string;
-//   department_info: string;
-//   phone: string;
-//   doctors: Doctor[];
-// }
-
+// A specialty contains multiple doctors
 export interface Specialty {
   _id: string;
-  name: string;
-  main_specialty: string;
-  sub_specialt: string;
+  name: string;              // e.g., "CARDIOLOGY"
+  main_specialty?: string;   // if you want parent specialty
+  sub_specialt: string;      // e.g., "echo cardiologist"
   description: string;
   department_info: string;
   phone: string;
-  doctors: any[];
+  doctors: Doctor[];
 }
 
 export interface Booking {
