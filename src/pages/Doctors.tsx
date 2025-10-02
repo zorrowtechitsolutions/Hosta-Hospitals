@@ -418,9 +418,7 @@ const DoctorManagement: React.FC = () => {
                         {/* Collapsible Consulting Hours */}
                         {isOpen && (
   <div>
-    <h4 className="font-semibold text-green-700 mb-3">
-      Consulting Hours:
-    </h4>
+    <h4 className="font-semibold text-green-700 mb-3">Consulting Hours:</h4>
     <div className="space-y-2">
       {doctor.consulting.map((cDay, dIdx) => (
         <div
@@ -430,18 +428,23 @@ const DoctorManagement: React.FC = () => {
           {/* Day column */}
           <div className="text-gray-800 font-medium">{cDay.day}</div>
 
-          {/* Sessions auto-expand */}
-          {cDay.sessions.map((session, sIdx) => (
-            <div key={sIdx} className="text-green-600">
-              {convertTo12HourFormat(session.start_time)} -{" "}
-              {convertTo12HourFormat(session.end_time)}
-            </div>
-          ))}
+          {/* Sessions - auto expand */}
+          {cDay.sessions.length > 0 ? (
+            cDay.sessions.map((session, sIdx) => (
+              <div key={sIdx} className="text-green-600">
+                {convertTo12HourFormat(session.start_time)} -{" "}
+                {convertTo12HourFormat(session.end_time)}
+              </div>
+            ))
+          ) : (
+            <div className="text-gray-400 italic">No sessions</div>
+          )}
         </div>
       ))}
     </div>
   </div>
 )}
+
 
                         
                       </div>
