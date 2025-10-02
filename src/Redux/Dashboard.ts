@@ -18,6 +18,7 @@ export interface ConsultingDay {
 export interface Doctor {
   _id?: string;
   name: string;
+  specialty?: string;
   qualification?: string;
   consulting: ConsultingDay[];
 }
@@ -25,9 +26,9 @@ export interface Doctor {
 // A specialty contains multiple doctors
 export interface Specialty {
   _id: string;
-  name: string;              // e.g., "CARDIOLOGY"
-  main_specialty?: string;   // if you want parent specialty
-  sub_specialt: string;      // e.g., "echo cardiologist"
+  name: string; // e.g., "CARDIOLOGY"
+  main_specialty?: string; // if you want parent specialty
+  sub_specialt: string; // e.g., "echo cardiologist"
   description: string;
   department_info: string;
   phone: string;
@@ -64,7 +65,7 @@ interface InitialStateType {
     closing_time: string;
     is_holiday: boolean;
   }[];
-    working_hours_clinic: any
+  working_hours_clinic: any;
 
   reviews: any[];
   specialties: Specialty[]; // Type specialties properly here
@@ -128,7 +129,7 @@ const InitialState: InitialStateType = {
       is_holiday: false,
     },
   ],
-    working_hours_clinic: [],
+  working_hours_clinic: [],
   reviews: [],
   specialties: [],
   booking: [],
