@@ -13,27 +13,14 @@ import {
 } from "../Components/UI/Card";
 import { BackButton } from "../Components/Commen";
 import { DeleteConfirmationDialog } from "../Components/DeleteConfirmation";
-import { setHospitalData } from "../Redux/Dashboard";
+import {
+  ConsultingDay,
+  Doctor,
+  Session,
+  setHospitalData,
+} from "../Redux/Dashboard";
 import { RootState } from "../Redux/Store";
 import { apiClient } from "../Components/Axios";
-
-interface ConsultingSession {
-  start_time: string;
-  end_time: string;
-}
-
-interface ConsultingDay {
-  day: string;
-  sessions: ConsultingSession[];
-}
-
-interface Doctor {
-  _id?: string;
-  name: string;
-  specialty?: string;
-  qualification?: string;
-  consulting: ConsultingDay[];
-}
 
 interface Specialty {
   _id: string;
@@ -41,7 +28,7 @@ interface Specialty {
   doctors: Doctor[];
 }
 
-const emptySession = (): ConsultingSession => ({
+const emptySession = (): Session => ({
   start_time: "",
   end_time: "",
 });
@@ -77,7 +64,13 @@ const DoctorManagement: React.FC = () => {
     consulting: [emptyDay()],
   });
 
-  const [isOpen, setIsOpen] = useState<boolean>(false)
+  // const [isOpen, setIsOpen] = useState<boolean>(false);
+
+  const [openDoctorId, setOpenDoctorId] = useState<string | null>(null);
+
+  const toggleDoctor = (doctorId: string) => {
+    setOpenDoctorId((prev) => (prev === doctorId ? null : doctorId));
+  };
 
   // Filtered specialties (typed)
   const filteredSpecialties = (specialties || []).filter(
@@ -249,7 +242,7 @@ const DoctorManagement: React.FC = () => {
   const handleSessionChange = (
     dayIndex: number,
     sessionIndex: number,
-    field: keyof ConsultingSession,
+    field: keyof Session,
     value: string
   ) => {
     setFormData((prev) => {
@@ -361,8 +354,6 @@ const DoctorManagement: React.FC = () => {
                 {specialty.doctors
                   .filter(doctorMatchesFilters)
                   .map((doctor: Doctor) => {
-                    ;
-
                     return (
                       <div
                         key={doctor._id ?? doctor.name}
@@ -378,13 +369,12 @@ const DoctorManagement: React.FC = () => {
                               variant="outline"
                               size="sm"
                               className="text-green-600 border-green-600 hover:bg-green-100"
-                              onClick={() => setIsOpen((prev) => !prev)}
+                              onClick={() => toggleDoctor(doctor._id!)}
                             >
-                              {isOpen
+                              {openDoctorId === doctor._id
                                 ? "Hide Consulting Hours"
                                 : "Show Consulting Hours"}
                             </Button>
-
                             <Button
                               variant="outline"
                               size="sm"
@@ -416,37 +406,48 @@ const DoctorManagement: React.FC = () => {
                         )}
 
                         {/* Collapsible Consulting Hours */}
-                        {isOpen && (
-  <div>
-    <h4 className="font-semibold text-green-700 mb-3">Consulting Hours:</h4>
-    <div className="space-y-2">
-      {doctor.consulting.map((cDay, dIdx) => (
-        <div
-          key={dIdx}
-          className="grid grid-flow-col auto-cols-fr gap-4 items-center border-b border-green-100 pb-2"
-        >
-          {/* Day column */}
-          <div className="text-gray-800 font-medium">{cDay.day}</div>
+                        {/* Collapsible Consulting Hours */}
+                        {openDoctorId === doctor._id && (
+                          <div>
+                            <h4 className="font-semibold text-green-700 mb-2">
+                              Consulting Hours:
+                            </h4>
+                            <div className="space-y-2">
+                              {doctor.consulting.map((cDay, dIdx) => (
+                                <div
+                                  key={dIdx}
+                                  className="grid grid-cols-3 gap-4 items-center border-b border-gray-200 pb-2"
+                                >
+                                  {/* Day */}
+                                  <div className="font-medium text-green-700">
+                                    {cDay.day}
+                                  </div>
 
-          {/* Sessions - auto expand */}
-          {cDay.sessions.length > 0 ? (
-            cDay.sessions.map((session, sIdx) => (
-              <div key={sIdx} className="text-green-600">
-                {convertTo12HourFormat(session.start_time)} -{" "}
-                {convertTo12HourFormat(session.end_time)}
-              </div>
-            ))
-          ) : (
-            <div className="text-gray-400 italic">No sessions</div>
-          )}
-        </div>
-      ))}
-    </div>
-  </div>
-)}
-
-
-                        
+                                  {/* Sessions */}
+                                  {cDay.sessions.length > 0 ? (
+                                    <div className="col-span-2 flex gap-4 text-green-600">
+                                      {cDay.sessions.map((session, sIdx) => (
+                                        <span key={sIdx}>
+                                          {convertTo12HourFormat(
+                                            session.start_time
+                                          )}{" "}
+                                          -{" "}
+                                          {convertTo12HourFormat(
+                                            session.end_time
+                                          )}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="col-span-2 text-gray-400 italic">
+                                      No sessions
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -545,7 +546,7 @@ const DoctorManagement: React.FC = () => {
                       </div>
 
                       {daySlot.sessions.map(
-                        (session: ConsultingSession, sessionIndex: number) => (
+                        (session: Session, sessionIndex: number) => (
                           <div
                             key={sessionIndex}
                             className="mb-2 flex items-center gap-2"
