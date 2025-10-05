@@ -9,7 +9,6 @@ import { setHospitalData, Specialty } from "../Redux/Dashboard";
 import { apiClient } from "../Components/Axios";
 import { errorToast, successToast } from "../Components/Toastify";
 import specialtiesData from "../Data/Specialties";
-import axios from "axios";
 
 const SpecialtyManagement: React.FC = () => {
   const { specialties, _id } = useSelector(
@@ -40,9 +39,9 @@ const SpecialtyManagement: React.FC = () => {
 
   // Add a new specialty.
   const handleAddSpecialty = async (newSpecialty: Omit<Specialty, "id">) => {
-    await axios
+    await apiClient
       .post(
-        ` http://localhost:3000/api/hospital/specialty/${_id}`,
+        `/api/hospital/specialty/${_id}`,
         { ...newSpecialty },
         { withCredentials: true }
       )
@@ -58,9 +57,9 @@ const SpecialtyManagement: React.FC = () => {
 
   // Edit a specialty.
   const handleUpdateSpecialty = async (updatedSpecialty: Specialty) => {
-    await axios
+    await apiClient
       .put(
-        ` http://localhost:3000/api/hospital/specialty/${_id}`,
+        `/api/hospital/specialty/${_id}`,
         { ...updatedSpecialty },
         { withCredentials: true }
       )
