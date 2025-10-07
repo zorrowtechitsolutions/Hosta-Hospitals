@@ -38,12 +38,12 @@ function App() {
         <Route path="/login" element={<HospitalLogin />} />
           <Route path="/otp" element={<HospitalOtpLogin />} />
 
+          {/* </Protector>
+          <Protector> */}
         <Route
           path="/newpassword"
           element={
-            <Protector>
               <PasswordReset />
-            </Protector>
           }
         />
         <Route
