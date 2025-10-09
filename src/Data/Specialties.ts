@@ -29,7 +29,23 @@ const specialtiesData: string [] = [
     "biochemistry",
     "physiology",
     "dental", 
-    "eye"
+    "eye",
+    "Allergy and Asthma Clinic",
+  "Counselling and Hypnotherapy",
+  "Family Counselling",
+  "Premarital Counselling",
+  "Sexology",
+  "Learning Disabilities",
+  "Career Counselling",
+  "General Medicine",
+  "Gynaecology",
+  "Infertility Treatment",
+  "Paediatrics",
+  "Skin, Hair and Cosmetic Treatment",
+  "Thyroid Treatment",
+  "Migraine Treatment",
+  "Kidney Stone Treatment",
+  "De-addiction Treatment"
 ];
 
 export default specialtiesData;
