@@ -39,7 +39,6 @@ const specialtiesData: string [] = [
   "career counselling",
   "gynaecology",
   "infertility treatment",
-  "paediatrics",
   "skin, hair and cosmetic treatment",
   "thyroid treatment",
   "migraine treatment",
