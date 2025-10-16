@@ -27,8 +27,6 @@ export interface Doctor {
 export interface Specialty {
   _id: string;
   name: string; // e.g., "CARDIOLOGY"
-  main_specialty?: string; // if you want parent specialty
-  sub_specialt: string; // e.g., "echo cardiologist"
   description: string;
   department_info: string;
   phone: string;
@@ -36,6 +34,7 @@ export interface Specialty {
 }
 
 export interface Booking {
+  _id?: string;
   user_name?: string;
   mobile?: string;
   email?: string;

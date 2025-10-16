@@ -165,11 +165,6 @@ const SpecialtyList: React.FC<{
               <h2 className="text-xl font-semibold text-green-800 mb-2">
                 {specialty.name}
               </h2>
-              {specialty.sub_specialt && (
-                <h4 className="text-lg font-medium text-green-700 mb-2">
-                  {specialty.sub_specialt}
-                </h4>
-              )}
             </div>
             <div className="flex space-x-2 ml-4">
               <button
@@ -233,6 +228,9 @@ const SpecialtyList: React.FC<{
   );
 };
 
+
+
+
 interface SpecialtyFormProps {
   specialty: Specialty | null;
   onSave: (specialty: Specialty) => void;
@@ -244,21 +242,16 @@ const SpecialtyForm: React.FC<SpecialtyFormProps> = ({
   onSave,
   onCancel,
 }) => {
-  const [mainSpecialties, setMainSpecialties] = useState<string[]>([]);
-  const [subSpecialties, setSubSpecialties] = useState<string[]>([]);
-  const [selectedMainSpecialty, setSelectedMainSpecialty] =
-    useState<string>("");
-  const [selectedSubSpecialty, setSelectedSubSpecialty] = useState<string>("");
-  const [showMainSuggestions, setShowMainSuggestions] = useState(false);
-  const [showSubSuggestions, setShowSubSuggestions] = useState(false);
+  const [specialties, setSpecialties] = useState<string[]>([]);
+  const [selectedSpecialty, setSelectedSpecialty] = useState<string>("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [phoneError, setPhoneError] = useState<string>("");
 
   // Initialize form data
   const [formData, setFormData] = useState<Specialty>(
     specialty || {
       _id: "",
       name: "",
-      main_specialty: "",
-      sub_specialt: "",
       description: "",
       department_info: "",
       phone: "",
@@ -266,111 +259,109 @@ const SpecialtyForm: React.FC<SpecialtyFormProps> = ({
     }
   );
 
-  // Load main specialties list from JSON
+  // Load specialties list from JSON
   useEffect(() => {
-    const mainSpecialtiesList = specialtiesData.map((item) => {
-      const key = Object.keys(item)[0];
-      return key;
-    });
-    setMainSpecialties(mainSpecialtiesList);
+    setSpecialties(specialtiesData);
   }, []);
 
   // If editing, prefill form with existing specialty
   useEffect(() => {
     if (specialty) {
       setFormData(specialty);
-      setSelectedMainSpecialty(specialty.main_specialty || "");
-      setSelectedSubSpecialty(specialty.sub_specialt || "");
-
-      // Load sub-specialties for the existing main specialty
-      const mainSpecialtyData = specialtiesData.find((item) => {
-        const key = Object.keys(item)[0];
-        return key.toLowerCase() === specialty.main_specialty?.toLowerCase();
-      });
-      if (mainSpecialtyData) {
-        const key = Object.keys(mainSpecialtyData)[0];
-        setSubSpecialties(mainSpecialtyData[key] || []);
-      }
+      setSelectedSpecialty(specialty.name || "");
     }
   }, [specialty]);
 
-  // Main specialty change (only for new specialties)
-  const handleMainSpecialtyChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  // Show suggestions when input is focused (only for adding)
+  const handleInputFocus = () => {
+    if (!specialty) { // Only show suggestions when adding (not editing)
+      setShowSuggestions(true);
+    }
+  };
+
+  // Specialty change (only for adding new specialties)
+  const handleSpecialtyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (specialty) return; // Disable for editing
 
     const value = e.target.value;
-    setSelectedMainSpecialty(value);
-    setShowMainSuggestions(true);
-    setFormData((prev) => ({ ...prev, main_specialty: value }));
+    setSelectedSpecialty(value);
+    setShowSuggestions(true);
   };
 
-  const handleMainSuggestionClick = (suggestion: string) => {
+  const handleSuggestionClick = (suggestion: string) => {
     if (specialty) return; // Disable for editing
 
-    setSelectedMainSpecialty(suggestion);
+    setSelectedSpecialty(suggestion);
     setFormData((prev) => ({
       ...prev,
       name: suggestion.toUpperCase(),
-      main_specialty: suggestion,
-      sub_specialt: "",
     }));
-
-    // load sub-specialties
-    const mainSpecialtyData = specialtiesData.find((item) => {
-      const key = Object.keys(item)[0];
-      return key.toLowerCase() === suggestion.toLowerCase();
-    });
-    if (mainSpecialtyData) {
-      const key = Object.keys(mainSpecialtyData)[0];
-      setSubSpecialties(mainSpecialtyData[key] || []);
-    }
-    setShowMainSuggestions(false);
+    setShowSuggestions(false);
   };
 
-  // Sub-specialty change (only when allowed)
-  const handleSubSpecialtyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Allow only for new specialties OR when editing and no sub-specialty exists
-    if (specialty && specialty.sub_specialt) return;
-
+  // Phone number validation - only digits and max 10 characters
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setSelectedSubSpecialty(value);
-    setShowSubSuggestions(true);
+    
+    // Allow only digits
+    const digitsOnly = value.replace(/\D/g, '');
+    
+    // Limit to 10 digits
+    const limitedDigits = digitsOnly.slice(0, 10);
+    
+    setFormData((prev) => ({ ...prev, phone: limitedDigits }));
+    
+    // Set error if not exactly 10 digits (but allow empty)
+    if (limitedDigits && limitedDigits.length !== 10) {
+      setPhoneError("Phone number must be exactly 10 digits");
+    } else {
+      setPhoneError("");
+    }
   };
 
-  const handleSubSuggestionClick = (suggestion: string) => {
-    // Allow only for new specialties OR when editing and no sub-specialty exists
-    if (specialty && specialty.sub_specialt) return;
+  // Handle click outside to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.specialty-input-container')) {
+        setShowSuggestions(false);
+      }
+    };
 
-    setSelectedSubSpecialty(suggestion);
-    setFormData((prev) => ({
-      ...prev,
-      sub_specialt: suggestion,
-    }));
-    setShowSubSuggestions(false);
-  };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
-  // Submit
+  // Filter suggestions based on input
+  const filteredSuggestions = specialties.filter(s =>
+    s.toLowerCase().includes(selectedSpecialty.toLowerCase())
+  );
+
+  // Submit with validation
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!specialty && !selectedMainSpecialty) {
-      alert("Please select a main specialty");
+    if (!specialty && !selectedSpecialty.trim()) {
+      alert("Please select a specialty");
       return;
     }
 
-    const submitData = specialty
+    // Validate phone number before submit
+    if (formData.phone && formData.phone.length !== 10) {
+      setPhoneError("Phone number must be exactly 10 digits");
+      return;
+    }
+
+    const submitData = specialty 
       ? {
           ...formData,
-          // Only include sub_specialt if we're editing and user added one
-          sub_specialt: specialty.sub_specialt || selectedSubSpecialty,
+          // Keep existing specialty name when editing
         }
       : {
           ...formData,
-          name: selectedMainSpecialty.toUpperCase(),
-          main_specialty: selectedMainSpecialty,
-          sub_specialt: selectedSubSpecialty,
+          name: selectedSpecialty.toUpperCase(),
         };
 
     onSave(submitData);
@@ -384,127 +375,54 @@ const SpecialtyForm: React.FC<SpecialtyFormProps> = ({
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Main Specialty - Disabled when editing */}
-          <div className="relative">
+          {/* Specialty Field - Editable only when adding */}
+          <div className="relative specialty-input-container">
             <label className="block text-sm font-medium text-green-700 mb-2">
-              Main Specialty {!specialty && "*"}
+              Specialty *
             </label>
+            
             {specialty ? (
+              // Editing mode - disabled input
               <input
                 type="text"
                 value={specialty.name}
-                className="w-full border border-green-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 text-gray-700 cursor-not-allowed"
+                className="w-full border border-green-300 rounded-md shadow-sm py-2 px-3 bg-gray-100 text-gray-700 cursor-not-allowed"
                 disabled
+                readOnly
               />
             ) : (
+              // Adding mode - editable input with suggestions
               <>
                 <input
                   type="text"
-                  value={selectedMainSpecialty}
-                  onChange={handleMainSpecialtyChange}
+                  value={selectedSpecialty}
+                  onChange={handleSpecialtyChange}
+                  onFocus={handleInputFocus}
+                  onClick={handleInputFocus}
                   className="w-full border border-green-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  placeholder="Search and select main specialty..."
+                  placeholder="Search and select specialty..."
                   required
                   autoComplete="off"
                 />
-                {showMainSuggestions && (
+                
+                {/* Suggestions Dropdown */}
+                {showSuggestions && (
                   <div className="absolute z-10 bg-white w-full border border-green-300 rounded-md mt-1 shadow-lg max-h-60 overflow-y-auto">
-                    {mainSpecialties
-                      .filter((s) =>
-                        s
-                          .toLowerCase()
-                          .includes(selectedMainSpecialty.toLowerCase())
-                      )
-                      .map((s, idx) => (
+                    {filteredSuggestions.length > 0 ? (
+                      filteredSuggestions.map((s, idx) => (
                         <div
                           key={idx}
-                          onClick={() => handleMainSuggestionClick(s)}
-                          className="px-3 py-2 hover:bg-green-50 cursor-pointer border-b border-green-100 last:border-b-0"
+                          onClick={() => handleSuggestionClick(s)}
+                          className="px-3 py-2 hover:bg-green-50 cursor-pointer border-b border-green-100 last:border-b-0 transition-colors"
                         >
                           {s}
                         </div>
-                      ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Sub Specialty */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-green-700 mb-2">
-              Sub-Specialty (Optional)
-            </label>
-            {specialty ? (
-              // When editing
-              specialty.sub_specialt ? (
-                // If sub-specialty exists, show as disabled
-                <input
-                  type="text"
-                  value={specialty.sub_specialt}
-                  className="w-full border border-green-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 text-gray-700 cursor-not-allowed"
-                  disabled
-                />
-              ) : (
-                // If no sub-specialty exists, allow adding one
-                <>
-                  <input
-                    type="text"
-                    value={selectedSubSpecialty}
-                    onChange={handleSubSpecialtyChange}
-                    className="w-full border border-green-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    placeholder="Search and select sub-specialty..."
-                    autoComplete="off"
-                  />
-                  {showSubSuggestions && subSpecialties.length > 0 && (
-                    <div className="absolute z-10 bg-white w-full border border-green-300 rounded-md mt-1 shadow-lg max-h-60 overflow-y-auto">
-                      {subSpecialties
-                        .filter((s) =>
-                          s
-                            .toLowerCase()
-                            .includes(selectedSubSpecialty.toLowerCase())
-                        )
-                        .map((s, idx) => (
-                          <div
-                            key={idx}
-                            onClick={() => handleSubSuggestionClick(s)}
-                            className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-green-100 last:border-b-0"
-                          >
-                            {s}
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </>
-              )
-            ) : (
-              // When adding new specialty
-              <>
-                <input
-                  type="text"
-                  value={selectedSubSpecialty}
-                  onChange={handleSubSpecialtyChange}
-                  className="w-full border border-green-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  placeholder="Search and select sub-specialty..."
-                  autoComplete="off"
-                />
-                {showSubSuggestions && subSpecialties.length > 0 && (
-                  <div className="absolute z-10 bg-white w-full border border-green-300 rounded-md mt-1 shadow-lg max-h-60 overflow-y-auto">
-                    {subSpecialties
-                      .filter((s) =>
-                        s
-                          .toLowerCase()
-                          .includes(selectedSubSpecialty.toLowerCase())
-                      )
-                      .map((s, idx) => (
-                        <div
-                          key={idx}
-                          onClick={() => handleSubSuggestionClick(s)}
-                          className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-green-100 last:border-b-0"
-                        >
-                          {s}
-                        </div>
-                      ))}
+                      ))
+                    ) : (
+                      <div className="px-3 py-2 text-gray-500">
+                        No specialties found
+                      </div>
+                    )}
                   </div>
                 )}
               </>
@@ -549,20 +467,43 @@ const SpecialtyForm: React.FC<SpecialtyFormProps> = ({
             />
           </div>
 
-          {/* Phone */}
+          {/* Phone with validation */}
           <div>
             <label className="block text-sm font-medium text-green-700 mb-2">
-              Phone
+              Phone {formData.phone && (
+                <span className="text-xs text-gray-500 ml-1">
+                  ({formData.phone.length}/10 digits)
+                </span>
+              )}
             </label>
             <input
               type="tel"
               value={formData.phone}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, phone: e.target.value }))
-              }
-              className="w-full border border-green-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-              placeholder="Department contact number..."
+              onChange={handlePhoneChange}
+              className={`w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:border-green-500 ${
+                phoneError 
+                  ? 'border-red-300 focus:ring-red-500' 
+                  : 'border-green-300 focus:ring-green-500'
+              }`}
+              placeholder="Enter 10 digit phone number..."
+              maxLength={10} // HTML maxLength attribute
             />
+            {phoneError && (
+              <p className="text-red-600 text-sm mt-1 flex items-center">
+                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                {phoneError}
+              </p>
+            )}
+            {formData.phone && !phoneError && (
+              <p className="text-green-600 text-sm mt-1 flex items-center">
+                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                Valid phone number
+              </p>
+            )}
           </div>
 
           {/* Actions */}
@@ -576,7 +517,12 @@ const SpecialtyForm: React.FC<SpecialtyFormProps> = ({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              disabled={!!phoneError} // Disable submit if phone validation fails
+              className={`px-4 py-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                phoneError
+                  ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
+                  : 'bg-green-600 text-white hover:bg-green-700'
+              }`}
             >
               {specialty ? "Update" : "Add"} Specialty
             </button>
@@ -586,5 +532,7 @@ const SpecialtyForm: React.FC<SpecialtyFormProps> = ({
     </div>
   );
 };
+
+
 
 export default SpecialtyManagement;

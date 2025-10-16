@@ -6,7 +6,7 @@ import HospitalHomePage from "./pages/Home";
 import HospitalDashboard from "./pages/HospitalDashboard";
 import DoctorManagement from "./pages/Doctors";
 import SpecialtyManagement from "./pages/Specialty";
-// import AppointmentsManagement from "./pages/Appointment";
+import AppointmentsManagement from "./pages/Appointment";
 import HospitalProfile from "./pages/Profile";
 import { useEffect } from "react";
 import { fetchData } from "./Components/FetchData";
@@ -38,12 +38,12 @@ function App() {
         <Route path="/login" element={<HospitalLogin />} />
           <Route path="/otp" element={<HospitalOtpLogin />} />
 
+          {/* </Protector>
+          <Protector> */}
         <Route
           path="/newpassword"
           element={
-            <Protector>
               <PasswordReset />
-            </Protector>
           }
         />
         <Route
@@ -70,7 +70,7 @@ function App() {
             </Protector>
           }
         />
-        {/* <Route path="/appointments" element={<AppointmentsManagement />} /> */}
+        <Route path="/appointments" element={<AppointmentsManagement />} />
         <Route
           path="/profile"
           element={
