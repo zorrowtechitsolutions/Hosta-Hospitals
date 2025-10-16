@@ -34,6 +34,7 @@ export interface Specialty {
 }
 
 export interface Booking {
+  _id?: string;
   user_name?: string;
   mobile?: string;
   email?: string;
