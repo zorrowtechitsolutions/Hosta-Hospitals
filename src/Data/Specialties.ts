@@ -29,6 +29,7 @@ const specialtiesData: string [] = [
     "biochemistry",
     "physiology",
     "dental", 
+    "pediatric dentist"
     "eye",
     "allergy and asthma clinic",
   "counselling and hypnotherapy",
