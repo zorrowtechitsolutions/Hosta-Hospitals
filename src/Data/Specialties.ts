@@ -43,7 +43,8 @@ const specialtiesData: string [] = [
   "thyroid treatment",
   "migraine treatment",
   "kidney stone treatment",
-  "de-addiction treatment"
+  "de-addiction treatment",
+    "general physician",
 ];
 
 export default specialtiesData;
