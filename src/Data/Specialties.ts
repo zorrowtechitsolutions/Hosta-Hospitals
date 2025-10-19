@@ -29,7 +29,6 @@ const specialtiesData: string [] = [
     "biochemistry",
     "physiology",
     "dental", 
-    "pediatric dentist"
     "eye",
     "allergy and asthma clinic",
   "counselling and hypnotherapy",
@@ -37,7 +36,7 @@ const specialtiesData: string [] = [
   "premarital counselling",
   "sexology",
   "learning disabilities",
-  "career counselling",
+  "counselling",
   "gynaecology",
   "infertility treatment",
   "skin, hair and cosmetic treatment",
