@@ -16,6 +16,7 @@ import { HomeProtector, Protector } from "./Components/Protector";
 import SettingsPage from "./pages/Settings";
 import PrivacyPolicyPage from "./pages/PrivacyPolicy";
 import HospitalOtpLogin from "./pages/OtpLogin";
+import DoctorBookingManagement from "./pages/BookingManagement";
 
 function App() {
   const dispatch = useDispatch();
@@ -36,16 +37,11 @@ function App() {
         />
         <Route path="/registration" element={<HospitalRegistration />} />
         <Route path="/login" element={<HospitalLogin />} />
-          <Route path="/otp" element={<HospitalOtpLogin />} />
+        <Route path="/otp" element={<HospitalOtpLogin />} />
 
-          {/* </Protector>
+        {/* </Protector>
           <Protector> */}
-        <Route
-          path="/newpassword"
-          element={
-              <PasswordReset />
-          }
-        />
+        <Route path="/newpassword" element={<PasswordReset />} />
         <Route
           path="/dashboard"
           element={
@@ -70,7 +66,22 @@ function App() {
             </Protector>
           }
         />
-        <Route path="/appointments" element={<AppointmentsManagement />} />
+        <Route
+          path="/appointments"
+          element={
+            <Protector>
+              <AppointmentsManagement />
+            </Protector>
+          }
+        />
+        <Route
+          path="/doctor-booking-management"
+          element={
+            <Protector>
+              <DoctorBookingManagement />
+            </Protector>
+          }
+        />
         <Route
           path="/profile"
           element={
