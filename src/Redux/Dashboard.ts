@@ -21,6 +21,7 @@ export interface Doctor {
   specialty?: string;
   qualification?: string;
   consulting: ConsultingDay[];
+  bookingOpen?: boolean;
 }
 
 // A specialty contains multiple doctors
@@ -33,16 +34,21 @@ export interface Specialty {
   doctors: Doctor[];
 }
 
+export interface User {
+  _id?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+}
+
 export interface Booking {
   _id?: string;
-  user_name?: string;
-  mobile?: string;
-  email?: string;
+  userId?: User;
   specialty?: string;
   doctor_name?: string;
-  booking_date?: Date;
-  booking_time: string;
-  status: "pending" | "accepted" | "declained";
+  booking_date?: Date | string;
+  booking_time?: string; // Changed from required to optional
+  status: "pending" | "accepted" | "declained" | "cancel"; // Added cancel status
 }
 
 interface InitialStateType {

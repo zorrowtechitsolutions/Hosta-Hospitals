@@ -12,7 +12,6 @@ export const fetchData = async (
       dispatch(setHospitalData(result.data.data));
     })
     .catch((err) => {
-      console.log("Sample");
       console.log(err);
       // window.location.assign("/login");
     });
