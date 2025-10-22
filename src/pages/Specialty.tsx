@@ -341,11 +341,11 @@ const SpecialtyForm: React.FC<SpecialtyFormProps> = ({
   );
 
 
-   const isValidSpecialty = () => {
-    return specialties.some(s => 
-      s.toLowerCase() === selectedSpecialty.toLowerCase()
-    );
-  };
+  //  const isValidSpecialty = () => {
+  //   return specialties.some(s => 
+  //     s.toLowerCase() === selectedSpecialty.toLowerCase()
+  //   );
+  // };
 
   
 
@@ -358,10 +358,10 @@ const SpecialtyForm: React.FC<SpecialtyFormProps> = ({
       return;
     }
 
-      if (!isValidSpecialty()) {
-        alert("Please select a valid specialty from the list");
-        return;
-      }
+      // if (!isValidSpecialty()) {
+      //   alert("Please select a valid specialty from the list");
+      //   return;
+      // }
 
     // Validate phone number before submit
     if (formData.phone && formData.phone.length !== 10) {
