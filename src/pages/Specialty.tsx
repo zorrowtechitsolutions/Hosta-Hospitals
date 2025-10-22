@@ -9,7 +9,6 @@ import { setHospitalData, Specialty } from "../Redux/Dashboard";
 import { apiClient } from "../Components/Axios";
 import { errorToast, successToast } from "../Components/Toastify";
 import specialtiesData from "../Data/Specialties";
-import axios from "axios";
 
 const SpecialtyManagement: React.FC = () => {
   const { specialties, _id } = useSelector(
@@ -40,9 +39,9 @@ const SpecialtyManagement: React.FC = () => {
 
   // Add a new specialty.
   const handleAddSpecialty = async (newSpecialty: Omit<Specialty, "id">) => {
-    await axios
+    await apiClient
       .post(
-        ` http://localhost:3000/api/hospital/specialty/${_id}`,
+        `/api/hospital/specialty/${_id}`,
         { ...newSpecialty },
         { withCredentials: true }
       )
@@ -341,11 +340,11 @@ const SpecialtyForm: React.FC<SpecialtyFormProps> = ({
   );
 
 
-  //  const isValidSpecialty = () => {
-  //   return specialties.some(s => 
-  //     s.toLowerCase() === selectedSpecialty.toLowerCase()
-  //   );
-  // };
+   const isValidSpecialty = () => {
+    return specialties.some(s => 
+      s.toLowerCase() === selectedSpecialty.toLowerCase()
+    );
+  };
 
   
 
@@ -358,10 +357,10 @@ const SpecialtyForm: React.FC<SpecialtyFormProps> = ({
       return;
     }
 
-      // if (!isValidSpecialty()) {
-      //   alert("Please select a valid specialty from the list");
-      //   return;
-      // }
+      if (!isValidSpecialty()) {
+        alert("Please select a valid specialty from the list");
+        return;
+      }
 
     // Validate phone number before submit
     if (formData.phone && formData.phone.length !== 10) {
