@@ -43,6 +43,7 @@ export interface User {
 
 export interface Booking {
   _id?: string;
+  patient_name :  String ,   patient_phone :  String ,  patient_place :  String ,   patient_dob :  String ,
   userId?: User;
   specialty?: string;
   doctor_name?: string;
@@ -50,6 +51,7 @@ export interface Booking {
   booking_time?: string; // Changed from required to optional
   status: "pending" | "accepted" | "declained" | "cancel"; // Added cancel status
 }
+
 
 interface InitialStateType {
   _id: string;
