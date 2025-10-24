@@ -143,7 +143,7 @@ console.log(res.data);
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Header */}
         <div className="mb-8">
-          <BackButton OnClick={() => navigate("/Dashboard")} />
+          <BackButton OnClick={() => navigate(-1)} />
           <div className="mt-4 flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center">
