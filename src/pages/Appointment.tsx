@@ -80,7 +80,6 @@ const AppointmentsManagement: React.FC = () => {
     }
     setCurrentPage(1);
   }, [appointments, filterStatus]);
-  
 
   const updateStatus = async (
     appointmentId: string,
@@ -132,20 +131,22 @@ const AppointmentsManagement: React.FC = () => {
     }
   };
 
-  function getAge(dob : any) {
-  const birthDate = new Date(dob);
-  const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
+  function getAge(dob: any) {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
 
-  // Adjust if birthday hasn’t occurred yet this year
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
+    // Adjust if birthday hasn’t occurred yet this year
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    return age;
   }
-
-  return age;
-}
-
 
   const handleNewAppointmentAction = async (
     appointment: Booking,
@@ -294,7 +295,7 @@ const AppointmentsManagement: React.FC = () => {
                   <div className="flex-1">
                     <div className="flex flex-wrap items-center gap-4 mb-2">
                       <span className="font-medium text-gray-900">
-                        {appointment?.patient_name }
+                        {appointment?.patient_name}
                       </span>
                       <span className="text-sm text-gray-600">
                         {appointment.specialty} with Dr.{" "}
@@ -313,16 +314,16 @@ const AppointmentsManagement: React.FC = () => {
                           {appointment.patient_phone}
                         </span>
                       )}
-                        {appointment.userId?.email && (
-                          <span className="flex items-center">
-                          <Calendar  size={16} className="mr-1" />
-                          {getAge(appointment.patient_dob)} 
+                      {appointment.userId?.email && (
+                        <span className="flex items-center">
+                          <Calendar size={16} className="mr-1" />
+                          {getAge(appointment.patient_dob)}
                         </span>
                       )}
                       {appointment.userId?.email && (
                         <span className="flex items-center">
                           <MapPin size={16} className="mr-1" />
-                          {appointment.patient_place }
+                          {appointment.patient_place}
                         </span>
                       )}
                     </div>
@@ -444,7 +445,11 @@ const AppointmentsManagement: React.FC = () => {
                 {currentAppointments.map((appointment) => (
                   <tr
                     key={appointment._id}
-                    className="hover:bg-gray-50 transition-colors"
+                    className="hover:bg-gray-50 transition-colors cursor-pointer"
+                    onClick={() => {
+                      setSelectedAppointment(appointment);
+                      setAppointmentTime(appointment.booking_time || "");
+                    }}
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center">
@@ -453,15 +458,14 @@ const AppointmentsManagement: React.FC = () => {
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {appointment. patient_name  || "N/A"}
+                            {appointment.patient_name || "N/A"}
                           </div>
                           <div className="text-sm text-gray-500">
                             {appointment.patient_phone || "No phone"}
                           </div>
-                             {appointment.userId?.email && (
+                          {appointment.userId?.email && (
                             <div className="text-sm text-gray-500 truncate max-w-xs">
-                                                        {getAge(appointment.patient_dob)} 
-
+                              {getAge(appointment.patient_dob)}
                             </div>
                           )}
                           {appointment.userId?.email && (
@@ -513,7 +517,9 @@ const AppointmentsManagement: React.FC = () => {
                             <button
                               onClick={() => {
                                 if (!appointment.booking_time) {
-                                  setError("Please set appointment time before accepting");
+                                  setError(
+                                    "Please set appointment time before accepting"
+                                  );
                                   setSelectedAppointment(appointment);
                                   return;
                                 }
@@ -521,9 +527,12 @@ const AppointmentsManagement: React.FC = () => {
                                   appointment._id!,
                                   "accepted",
                                   appointment.booking_time
-                                )
+                                );
                               }}
-                              disabled={loading[appointment._id!] || !appointment.booking_time}
+                              disabled={
+                                loading[appointment._id!] ||
+                                !appointment.booking_time
+                              }
                               className="text-green-600 hover:text-green-900 font-medium text-sm transition-colors disabled:opacity-50"
                             >
                               {loading[appointment._id!] ? "..." : "Accept"}
@@ -657,19 +666,25 @@ const AppointmentsManagement: React.FC = () => {
                       <div className="flex justify-between">
                         <span className="text-gray-600">Name:</span>
                         <span className="font-medium">
-                          {selectedAppointment.userId?.name || "N/A"}
+                          {selectedAppointment?.patient_name || "N/A"}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Mobile:</span>
                         <span className="font-medium">
-                          {selectedAppointment.userId?.phone || "N/A"}
+                          {selectedAppointment?.patient_phone || "N/A"}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Email:</span>
+                        <span className="text-gray-600">Age:</span>
                         <span className="font-medium">
-                          {selectedAppointment.userId?.email || "N/A"}
+                          {getAge(selectedAppointment.patient_dob)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Place:</span>
+                        <span className="font-medium">
+                          {selectedAppointment.patient_place}
                         </span>
                       </div>
                     </div>
