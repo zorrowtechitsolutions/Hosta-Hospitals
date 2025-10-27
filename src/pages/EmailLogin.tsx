@@ -201,6 +201,8 @@ const EmailLogin: React.FC = () => {
     dispatch(setHospitalData({ _id: result.data.data._id }));
     successToast(result.data.message || "Login successful!");
     localStorage.setItem("accessToken", result.data.token);
+          localStorage.setItem("hospitalId", result.data.data._id);
+
     navigate("/dashboard");
 
   } catch (error: any) {
