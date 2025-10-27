@@ -49,7 +49,7 @@ const HospitalDashboard: React.FC = () => {
         if (Notification.permission === "granted") {
           new Notification("New Notification", {
             body: data.message,
-            // icon: "./icons/notification.png", // ✅ Your custom icon
+            icon: "./icons/notification.png", // ✅ Your custom icon
           });
         }
 
