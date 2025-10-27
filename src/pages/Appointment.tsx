@@ -581,14 +581,14 @@ const AppointmentsManagement: React.FC = () => {
                             <div className="text-sm font-medium text-gray-900">
                               {appointment.patient_name || "N/A"}
                             </div>
-                            <div className="text-sm text-gray-500">
-                              {appointment.patient_phone || "No phone"}
-                            </div>
                             {appointment.userId?.email && (
                               <div className="text-sm text-gray-500 truncate max-w-xs">
                                 {getAge(appointment.patient_dob)}
                               </div>
                             )}
+                            <div className="text-sm text-gray-500">
+                              {appointment.patient_phone || "No phone"}
+                            </div>
                             {appointment.userId?.email && (
                               <div className="text-sm text-gray-500 truncate max-w-xs">
                                 {appointment.patient_place}
@@ -791,18 +791,19 @@ const AppointmentsManagement: React.FC = () => {
                           {selectedAppointment?.patient_name || "N/A"}
                         </span>
                       </div>
+                           <div className="flex justify-between">
+                        <span className="text-gray-600">Age:</span>
+                        <span className="font-medium">
+                          {getAge(selectedAppointment.patient_dob)}
+                        </span>
+                      </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Mobile:</span>
                         <span className="font-medium">
                           {selectedAppointment?.patient_phone || "N/A"}
                         </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Age:</span>
-                        <span className="font-medium">
-                          {getAge(selectedAppointment.patient_dob)}
-                        </span>
-                      </div>
+                 
                       <div className="flex justify-between">
                         <span className="text-gray-600">Place:</span>
                         <span className="font-medium">
