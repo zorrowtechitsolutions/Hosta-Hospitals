@@ -17,6 +17,7 @@ import SettingsPage from "./pages/Settings";
 import PrivacyPolicyPage from "./pages/PrivacyPolicy";
 import HospitalOtpLogin from "./pages/OtpLogin";
 import DoctorBookingManagement from "./pages/BookingManagement";
+import NotificationPage from "./pages/Notification";
 
 function App() {
   const dispatch = useDispatch();
@@ -83,10 +84,10 @@ function App() {
           }
         />
         <Route
-          path="/profile"
+          path="/notification"
           element={
             <Protector>
-              <HospitalProfile />
+              <NotificationPage />
             </Protector>
           }
         />
