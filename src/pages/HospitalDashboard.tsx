@@ -7,34 +7,76 @@ import {
   Phone,
   Mail,
   MapPin,
+  Bell,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleSidebar } from "../Redux/SideBar";
 import SideBar from "../Components/SideBar";
 import { RootState } from "../Redux/Store";
 import { setHospitalData } from "../Redux/Dashboard";
 import { fetchData } from "../Components/FetchData";
+import io from "socket.io-client";
+
+const socket = io("https://hosta-server.vercel.app");
 
 const HospitalDashboard: React.FC = () => {
   const dispatch = useDispatch();
   const { name, image, address, phone, email, specialties, booking } =
     useSelector((state: RootState) => state.Dashboard);
+    const navigate = useNavigate()
 
+
+  // 🔔 Handle real-time push notifications
   useEffect(() => {
-    fetchData(dispatch, setHospitalData);
+    // Request permission once
+    if (Notification.permission === "default" || Notification.permission === "denied") {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+          console.log("Notification permission granted");
+        } else {
+          console.log("Notification permission denied");
+        }
+      });
+    }
+
+    socket.on("pushNotification", (data) => {
+
+      const hospitalId = localStorage.getItem("hospitalId");
+
+      if (hospitalId === data.hospitalId) {
+        // Show system notification
+        if (Notification.permission === "granted") {
+          new Notification("New Notification", {
+            body: data.message,
+            // icon: "./icons/notification.png", // ✅ Your custom icon
+          });
+        }
+
+        // Update localStorage count
+        const storedCount = Number(localStorage.getItem("notificationCount")) || 0;
+        const newCount = storedCount + 1;
+        localStorage.setItem("notificationCount", String(newCount));
+
+      }
+    });
+
+    return () => {
+      socket.off("pushNotification");
+    };
   }, []);
 
-  const [currentTime, setCurrentTime] = useState(new Date());
+  // 🔄 Fetch hospital data on mount
+  useEffect(() => {
+    fetchData(dispatch, setHospitalData);
+  }, [dispatch]);
 
+  const [currentTime, setCurrentTime] = useState(new Date());
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-
-    return () => {
-      clearInterval(timer);
-    };
+    return () => clearInterval(timer);
   }, []);
 
   const formatDate = (date: Date) => {
@@ -59,24 +101,45 @@ const HospitalDashboard: React.FC = () => {
     <div className="flex h-screen bg-green-50">
       <SideBar />
       <div className="flex-1 flex flex-col overflow-hidden">
+        {/* ================= HEADER ================= */}
         <header className="bg-white shadow-md">
           <div className="flex items-center justify-between p-4">
+            {/* Sidebar Toggle */}
             <button
               onClick={() => dispatch(toggleSidebar())}
               className="md:hidden p-2 rounded-md border border-green-600 text-green-600 hover:bg-green-50 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <Menu size={24} />
             </button>
+
+            {/* Dashboard Title */}
             <h1 className="text-xl font-semibold text-green-800">Dashboard</h1>
-            <div className="text-green-600 text-sm text-right">
-              <div className="font-medium">{formatTime(currentTime)}</div>
-              <div>{formatDate(currentTime)}</div>
+
+            {/* Right Side: Date/Time + Notifications */}
+            <div className="flex items-center space-x-6">
+              {/* Date & Time */}
+              <div className="text-green-600 text-sm text-right">
+                <div className="font-medium">{formatTime(currentTime)}</div>
+                <div>{formatDate(currentTime)}</div>
+              </div>
+
+              {/* Notification Bell with Count */}
+              <div className="relative cursor-pointer p-2 rounded-full hover:bg-green-100 transition-colors">
+                <Bell size={26} className="text-green-700"  onClick={() => navigate("/notification")} />
+                {Number(localStorage.getItem("notificationCount")) > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {localStorage.getItem("notificationCount")}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </header>
 
+        {/* ================= MAIN CONTENT ================= */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-green-50 p-6">
           <div className="max-w-4xl mx-auto">
+            {/* Hospital Info Card */}
             <div className="bg-white p-8 rounded-lg shadow-md mb-6">
               <div className="flex flex-col items-center mb-6">
                 <img
@@ -102,6 +165,7 @@ const HospitalDashboard: React.FC = () => {
               </div>
             </div>
 
+            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               <Link to="/doctors" className="block">
                 <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
@@ -111,9 +175,7 @@ const HospitalDashboard: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <Users size={48} className="text-green-600" />
                     <span className="text-3xl font-bold text-green-800">
-                      {specialties.reduce((acc, curr) => {
-                        return acc + curr.doctors.length;
-                      }, 0)}
+                      {specialties.reduce((acc, curr) => acc + curr.doctors.length, 0)}
                     </span>
                   </div>
                   <div className="text-green-600 mt-4 inline-block">
@@ -121,6 +183,7 @@ const HospitalDashboard: React.FC = () => {
                   </div>
                 </div>
               </Link>
+
               <Link to="/specialties" className="block">
                 <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                   <h3 className="text-xl font-semibold text-green-800 mb-4">
@@ -137,6 +200,7 @@ const HospitalDashboard: React.FC = () => {
                   </div>
                 </div>
               </Link>
+
               <Link to="/appointments" className="block">
                 <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                   <h3 className="text-xl font-semibold text-green-800 mb-4">
