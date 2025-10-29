@@ -1,4 +1,4 @@
-import { Hospital, Settings, Stethoscope, User, Users, X } from "lucide-react";
+import { Bell, Hospital, Settings, Stethoscope, User, Users, X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "../Redux/Store";
@@ -71,6 +71,15 @@ const SideBar = () => {
             >
               <User size={20} />
               <span>Profile</span>
+            </Link>
+          </li>
+               <li>
+            <Link
+              to="/notification"
+              className="flex items-center space-x-2 hover:bg-green-700 p-2 rounded-md"
+            >
+              <Bell size={20} />
+              <span>Notifications</span>
             </Link>
           </li>
           <li>
