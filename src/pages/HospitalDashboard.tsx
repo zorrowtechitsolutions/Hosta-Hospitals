@@ -25,31 +25,33 @@ const HospitalDashboard: React.FC = () => {
   const dispatch = useDispatch();
   const { name, image, address, phone, email, specialties, booking } =
     useSelector((state: RootState) => state.Dashboard);
-    const navigate = useNavigate()
+  const navigate = useNavigate();
 
-     const [notifications, setNotifications] = useState<any>([]);
+  const [notifications, setNotifications] = useState<any>([]);
 
-useEffect(() => {
-  const fetchNotifications = async () => {
-    const hospitalId = localStorage.getItem("hospitalId");
-    try {
-      const notificationData: any = await apiClient.get(
-        `/api/notifications/hospital/no-read/${hospitalId}`
-      );
-      setNotifications(notificationData?.data || []);
-    } catch (err) {
-      console.error("Error fetching notifications:", err);
-    }
-  };
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      const hospitalId = localStorage.getItem("hospitalId");
+      try {
+        const notificationData: any = await apiClient.get(
+          `/api/notifications/hospital/no-read/${hospitalId}`
+        );
+        setNotifications(notificationData?.data || []);
+      } catch (err) {
+        console.error("Error fetching notifications:", err);
+      }
+    };
 
-  fetchNotifications();
-}, []);
-
+    fetchNotifications();
+  }, []);
 
   // 🔔 Handle real-time push notifications
   useEffect(() => {
     // Request permission once
-    if (Notification.permission === "default" || Notification.permission === "denied") {
+    if (
+      Notification.permission === "default" ||
+      Notification.permission === "denied"
+    ) {
       Notification.requestPermission().then((permission) => {
         if (permission === "granted") {
           console.log("Notification permission granted");
@@ -60,6 +62,7 @@ useEffect(() => {
     }
 
     socket.on("pushNotification", (data) => {
+      console.log("hii", data);
 
       const hospitalId = localStorage.getItem("hospitalId");
 
@@ -73,10 +76,10 @@ useEffect(() => {
         }
 
         // Update localStorage count
-        const storedCount = Number(localStorage.getItem("notificationCount")) || 0;
+        const storedCount =
+          Number(localStorage.getItem("notificationCount")) || 0;
         const newCount = storedCount + 1;
         localStorage.setItem("notificationCount", String(newCount));
-
       }
     });
 
@@ -144,17 +147,22 @@ useEffect(() => {
 
               {/* Notification Bell with Count */}
               <div className="relative cursor-pointer p-2 rounded-full hover:bg-green-100 transition-colors">
-                <Bell size={26} className="text-green-700"  onClick={() => navigate("/notification")} />
-                {
-                
-                Number(localStorage.getItem("notificationCount")) > 0 && (
+                <Bell
+                  size={26}
+                  className="text-green-700"
+                  onClick={() => navigate("/notification")}
+                />
+                {Number(localStorage.getItem("notificationCount")) !== 0 ? (
+                  Number(localStorage.getItem("notificationCount")) > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                      {localStorage.getItem("notificationCount")}
+                    </span>
+                  )
+                ) : (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                    {localStorage.getItem("notificationCount")}
+                    {notifications?.length}
                   </span>
-                )
-                ||
-                notifications?.lenght
-                }
+                )}
               </div>
             </div>
           </div>
@@ -199,7 +207,10 @@ useEffect(() => {
                   <div className="flex items-center justify-between">
                     <Users size={48} className="text-green-600" />
                     <span className="text-3xl font-bold text-green-800">
-                      {specialties.reduce((acc, curr) => acc + curr.doctors.length, 0)}
+                      {specialties.reduce(
+                        (acc, curr) => acc + curr.doctors.length,
+                        0
+                      )}
                     </span>
                   </div>
                   <div className="text-green-600 mt-4 inline-block">
