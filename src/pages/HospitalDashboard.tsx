@@ -17,6 +17,7 @@ import { RootState } from "../Redux/Store";
 import { setHospitalData } from "../Redux/Dashboard";
 import { fetchData } from "../Components/FetchData";
 import io from "socket.io-client";
+import { apiClient } from "../Components/Axios";
 
 const socket = io("https://hosta-server.vercel.app");
 
@@ -25,6 +26,24 @@ const HospitalDashboard: React.FC = () => {
   const { name, image, address, phone, email, specialties, booking } =
     useSelector((state: RootState) => state.Dashboard);
     const navigate = useNavigate()
+
+     const [notifications, setNotifications] = useState<any>([]);
+
+useEffect(() => {
+  const fetchNotifications = async () => {
+    const hospitalId = localStorage.getItem("hospitalId");
+    try {
+      const notificationData: any = await apiClient.get(
+        `/api/notifications/hospital/no-read/${hospitalId}`
+      );
+      setNotifications(notificationData?.data || []);
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+    }
+  };
+
+  fetchNotifications();
+}, []);
 
 
   // 🔔 Handle real-time push notifications
@@ -49,7 +68,7 @@ const HospitalDashboard: React.FC = () => {
         if (Notification.permission === "granted") {
           new Notification("New Notification", {
             body: data.message,
-            icon: "./icons/notification.png", // ✅ Your custom icon
+            // icon: "./icons/notification.png", // ✅ Your custom icon
           });
         }
 
@@ -126,11 +145,16 @@ const HospitalDashboard: React.FC = () => {
               {/* Notification Bell with Count */}
               <div className="relative cursor-pointer p-2 rounded-full hover:bg-green-100 transition-colors">
                 <Bell size={26} className="text-green-700"  onClick={() => navigate("/notification")} />
-                {Number(localStorage.getItem("notificationCount")) > 0 && (
+                {
+                
+                Number(localStorage.getItem("notificationCount")) > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                     {localStorage.getItem("notificationCount")}
                   </span>
-                )}
+                )
+                ||
+                notifications?.lenght
+                }
               </div>
             </div>
           </div>
