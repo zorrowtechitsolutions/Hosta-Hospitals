@@ -19,7 +19,7 @@ import { fetchData } from "../Components/FetchData";
 import io from "socket.io-client";
 import { apiClient } from "../Components/Axios";
 
-const socket = io("https://hosta-server.vercel.app");
+const socket = io("https://hostaserver.onrender.com");
 
 const HospitalDashboard: React.FC = () => {
   const dispatch = useDispatch();
