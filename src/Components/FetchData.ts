@@ -4,12 +4,14 @@ export const fetchData = async (
   dispatch: any,
   setHospitalData: (data: any) => void
 ) => {
+
+  const hospitalId = localStorage.getItem("hospitalId") 
   await apiClient
-    .get("/api/hospital/details", {
+    .get(`/api/hospital/${hospitalId}`, {
       withCredentials: true,
     })
     .then((result) => {
-      dispatch(setHospitalData(result.data.data));
+      dispatch(setHospitalData(result.data));
     })
     .catch((err) => {
       console.log(err);
