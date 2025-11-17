@@ -11,7 +11,7 @@ export const fetchData = async (
       withCredentials: true,
     })
     .then((result) => {
-      dispatch(setHospitalData(result.data));
+      dispatch(setHospitalData(result.data.data));
     })
     .catch((err) => {
       console.log(err);
