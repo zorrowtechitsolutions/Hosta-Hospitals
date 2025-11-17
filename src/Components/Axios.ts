@@ -103,7 +103,7 @@ import axios from "axios";
 export const apiClient = axios.create({
   // baseURL: "https://hosta-server.vercel.app",
     // baseURL: "https://hostaserver.onrender.com",
-  baseURL: "http://www.hostahospital.com",
+  baseURL: "https://hostahospital.com",
   withCredentials: true, // ✅ Important for refresh/login cookies
 });
 
