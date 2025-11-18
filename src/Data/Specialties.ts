@@ -45,6 +45,7 @@ const specialtiesData: string [] = [
   "kidney stone treatment",
   "de-addiction treatment",
     "general physician",
+    "diabetology",
 ];
 
 export default specialtiesData;
