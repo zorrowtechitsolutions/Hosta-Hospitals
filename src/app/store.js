@@ -14,6 +14,7 @@ export const store = configureStore({
     [specialitesApi.reducerPath]: specialitesApi.reducer,
     [doctorsApi.reducerPath]: doctorsApi.reducer,
 
+    
   },
 
   middleware: (getDefaultMiddleware) =>
