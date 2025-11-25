@@ -247,64 +247,135 @@ export default function ProfilePage() {
     }
   }
 
-  const handleSave = async () => {
-    setLoading(true)
-    try {
-      // Convert working hours to API format
-      const workingHoursApiFormat = Object.entries(workingHours).map(([day, hours]) => ({
-        day,
-        opening_time: hours.open,
-        closing_time: hours.close,
-        is_holiday: hours.isHoliday
-      }))
+  // const handleSave = async () => {
+  //   setLoading(true)
+  //   try {
+  //     // Convert working hours to API format
+  //     const workingHoursApiFormat = Object.entries(workingHours).map(([day, hours]) => ({
+  //       day,
+  //       opening_time: hours.open,
+  //       closing_time: hours.close,
+  //       is_holiday: hours.isHoliday
+  //     }))
 
-      const workingHoursClinicApiFormat = Object.entries(workingHoursClinic).map(([day, hours]) => ({
-        day,
-        morning_session: hours.morning_session,
-        evening_session: hours.evening_session,
-        is_holiday: hours.isHoliday,
-        hasBreak: hours.hasBreak
-      }))
+  //     const workingHoursClinicApiFormat = Object.entries(workingHoursClinic).map(([day, hours]) => ({
+  //       day,
+  //       morning_session: hours.morning_session,
+  //       evening_session: hours.evening_session,
+  //       is_holiday: hours.isHoliday,
+  //       hasBreak: hours.hasBreak
+  //     }))
 
-      // Create FormData for file upload
-      const formData = new FormData()
+  //     // Create FormData for file upload
+  //     const formData = new FormData()
       
-      // Append basic data
-      formData.append('name', editData.name)
-      formData.append('email', editData.email)
-      formData.append('phone', editData.phone)
-      formData.append('emergencyContact', editData.emergencyContact)
-      formData.append('address', editData.address)
-      formData.append('latitude', editData.latitude)
-      formData.append('longitude', editData.longitude)
-      formData.append('about', editData.about)
-      formData.append('type', editData.type)
-      formData.append('working_hours', JSON.stringify(activeTab === 'normal' ? workingHoursApiFormat : []))
-      formData.append('working_hours_clinic', JSON.stringify(activeTab === 'clinic' ? workingHoursClinicApiFormat : []))
-      formData.append('hasBreakSchedule', activeTab === 'clinic' ? 'true' : 'false')
+  //     // Append basic data
+  //     formData.append('name', editData.name)
+  //     formData.append('email', editData.email)
+  //     formData.append('phone', editData.phone)
+  //     formData.append('emergencyContact', editData.emergencyContact)
+  //     formData.append('address', editData.address)
+  //     formData.append('latitude', editData.latitude)
+  //     formData.append('longitude', editData.longitude)
+  //     formData.append('about', editData.about)
+  //     formData.append('type', editData.type)
+  //     formData.append('working_hours', JSON.stringify(activeTab === 'normal' ? workingHoursApiFormat : []))
+  //     formData.append('working_hours_clinic', JSON.stringify(activeTab === 'clinic' ? workingHoursClinicApiFormat : []))
+  //     formData.append('hasBreakSchedule', activeTab === 'clinic' ? 'true' : 'false')
 
-      // Append image if selected
-      if (selectedImage) {
-        formData.append('image', selectedImage)
-      }
+  //     // Append image if selected
+  //     if (selectedImage) {
+  //       formData.append('image', selectedImage)
+  //     }
 
-      const result = await updateHospital({
-        id: hospitalId,
-        data: formData,
-      }).unwrap()
+  //     const result = await updateHospital({
+  //       id: hospitalId,
+  //       data: formData,
+  //     }).unwrap()
 
-      setHospitalData(editData)
-      setIsEditing(false)
-      setSelectedImage(null)
-      refetch()
-      toast.success("Profile updated!");
-    } catch (error) {
-      const msg = error?.data?.message || "Server error!";
-       toast.error(msg);
-    } finally {
-      setLoading(false)
+  //     setHospitalData(editData)
+  //     setIsEditing(false)
+  //     setSelectedImage(null)
+  //     refetch()
+  //     toast.success("Profile updated!");
+  //   } catch (error) {
+  //     const msg = error?.data?.message || "Server error!";
+  //      toast.error(msg);
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }
+
+  // In your profile page - update handleSave function
+const handleSave = async () => {
+  setLoading(true)
+  try {
+    // Convert working hours to API format
+    const workingHoursApiFormat = Object.entries(workingHours).map(([day, hours]) => ({
+      day,
+      opening_time: hours.open,
+      closing_time: hours.close,
+      is_holiday: hours.isHoliday
+    }))
+
+    const workingHoursClinicApiFormat = Object.entries(workingHoursClinic).map(([day, hours]) => ({
+      day,
+      morning_session: hours.morning_session,
+      evening_session: hours.evening_session,
+      is_holiday: hours.isHoliday,
+      hasBreak: hours.hasBreak
+    }))
+
+    // Create FormData for file upload
+    const formData = new FormData()
+    
+    // Append basic data
+    formData.append('name', editData.name)
+    formData.append('email', editData.email)
+    formData.append('phone', editData.phone)
+    formData.append('emergencyContact', editData.emergencyContact)
+    formData.append('address', editData.address)
+    formData.append('latitude', editData.latitude)
+    formData.append('longitude', editData.longitude)
+    formData.append('about', editData.about)
+    formData.append('type', editData.type)
+    formData.append('working_hours', JSON.stringify(activeTab === 'normal' ? workingHoursApiFormat : []))
+    formData.append('working_hours_clinic', JSON.stringify(activeTab === 'clinic' ? workingHoursClinicApiFormat : []))
+    formData.append('hasBreakSchedule', activeTab === 'clinic' ? 'true' : 'false')
+
+    // Append specialties if they exist
+    if (hospitalData.specialties && hospitalData.specialties.length > 0) {
+      formData.append('specialties', JSON.stringify(hospitalData.specialties))
     }
+
+    // Append image if selected
+    if (selectedImage) {
+      formData.append('image', selectedImage)
+    }
+
+    // Log FormData contents for debugging
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value)
+    }
+
+    const result = await updateHospital({
+      id: hospitalId,
+      data: formData,
+    }).unwrap()
+
+    setHospitalData(editData)
+    setIsEditing(false)
+    setSelectedImage(null)
+    refetch()
+    toast.success("Profile updated!")
+  } catch (error) {
+    const msg = error?.data?.message || "Server error!"
+    toast.error(msg)
+    console.error('Update error:', error)
+  } finally {
+    setLoading(false)
   }
+}
 
   const handleCancel = () => {
     setIsEditing(false)

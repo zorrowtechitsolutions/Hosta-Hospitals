@@ -35,18 +35,30 @@ export const hospitalApi = createApi({
     //   }),
     // }),
 
-    updateHospital: builder.mutation({
-  query: ({ id, data }) => {
-    console.log("Update hospital data:", data);
+//     updateHospital: builder.mutation({
+//   query: ({ id, data }) => {
+//     console.log("Update hospital data:", JSON.stringify(data));
+//      console.log("Is FormData?", data instanceof FormData);
     
+    
+//     return {
+//       url: `/api/hospital/details/${id}`,
+//       method: "PUT",
+//       body: JSON.stringify(data),
+//     };
+//   },
+// }),
+
+
+updateHospital: builder.mutation({
+  query: ({ id, data }) => {    
     return {
       url: `/api/hospital/details/${id}`,
       method: "PUT",
-      body: JSON.stringify(data),
+      body: data instanceof FormData ? data : JSON.stringify(data),
     };
   },
 }),
-
 
 loginHospitalEmail: builder.mutation({
   query: (credentials) => ({

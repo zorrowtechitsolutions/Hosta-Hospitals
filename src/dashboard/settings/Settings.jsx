@@ -110,12 +110,18 @@ export default function SettingsPage() {
 
     setLoading(true)
     try {
+
+        const formData = new FormData()
+    
+    // Append basic data
+    formData.append('name', editSettings.hospitalName)
+        formData.append('email', editSettings.email)
+
+
+
       const result = await updateHospital({
         id: hospitalId,
-        data: {
-          name: editSettings.hospitalName,
-          email: editSettings.email,
-        }
+        data: formData
       }).unwrap()
 
       setSettings(editSettings)
@@ -264,12 +270,17 @@ export default function SettingsPage() {
         otp: otpString
       }).unwrap()
 
+
+
+        const formData = new FormData()
+    
+    // Append basic data
+    formData.append('newPassword', passwordData.newPassword)
+
       // If OTP verification successful, update password
       const updateResult = await updateHospital({
         id: hospitalId,
-        data: {
-          newPassword: passwordData.newPassword,
-        }
+        data: formData
       }).unwrap()
 
       // Reset all states

@@ -39,6 +39,7 @@
 import { SignIn } from "@/components/auth/Sign-in";
 import { SignInOtp } from "@/components/auth/Sign-in-otp";
 import { SignUp } from "@/components/auth/Sign-up";
+import HospitalHomePage from "@/components/home";
 import BookingsPage from "@/dashboard/bookings/Bookings";
 import DoctorBookingPage from "@/dashboard/bookings/doctor-booking/Doctorbooking";
 import DashboardPage from "@/dashboard/Dashboard";
@@ -59,6 +60,7 @@ export default function AppRoutes() {
       <Route path="/sign-in" element={<SignIn />} />
       <Route path="/sign-up" element={<SignUp />} />
       <Route path="/signin-otp" element={<SignInOtp />} />
+      <Route path="/" element={<HospitalHomePage />} />
 
       
       <Route element={<ProtectedRoutes />}>

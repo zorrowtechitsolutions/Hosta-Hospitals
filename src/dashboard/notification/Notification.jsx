@@ -252,7 +252,7 @@ export default function NotificationsPage() {
         {unreadCount > 0 && (
           <Button 
             onClick={markAllRead} 
-            className="bg-primary hover:bg-primary/90"
+            className="bg-green-600 hover:bg-green-700"
             disabled={isPosting}
           >
             {isPosting ? 'Marking...' : 'Mark All Read'}
