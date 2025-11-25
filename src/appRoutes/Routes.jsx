@@ -39,7 +39,7 @@
 import { SignIn } from "@/components/auth/Sign-in";
 import { SignInOtp } from "@/components/auth/Sign-in-otp";
 import { SignUp } from "@/components/auth/Sign-up";
-import HospitalHomePage from "@/components/home";
+import HospitalHomePage from "@/components/Home";
 import BookingsPage from "@/dashboard/bookings/Bookings";
 import DoctorBookingPage from "@/dashboard/bookings/doctor-booking/Doctorbooking";
 import DashboardPage from "@/dashboard/Dashboard";
