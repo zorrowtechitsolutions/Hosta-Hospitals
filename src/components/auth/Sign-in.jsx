@@ -99,9 +99,9 @@ navigate("/dashboard", { replace: true });
                 <label htmlFor="password" className="text-sm font-medium">
                   Password
                 </label>
-                <Link href="#" className="text-xs text-primary hover:underline">
+                <span onClick={() => navigate("/reset-password")} className="cursor-pointer text-xs text-primary hover:underline">
                   Forgot password?
-                </Link>
+                </span>
               </div>
               <div className="relative">
                 <Input

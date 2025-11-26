@@ -1,3 +1,4 @@
+import { ResetPassword } from "@/components/auth/Reset-passwrod";
 import { SignIn } from "@/components/auth/Sign-in";
 import { SignInOtp } from "@/components/auth/Sign-in-otp";
 import { SignUp } from "@/components/auth/Sign-up";
@@ -22,6 +23,7 @@ export default function AppRoutes() {
       <Route path="/sign-in" element={<SignIn />} />
       <Route path="/sign-up" element={<SignUp />} />
       <Route path="/signin-otp" element={<SignInOtp />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/" element={<HospitalHomePage />} />
 
       
