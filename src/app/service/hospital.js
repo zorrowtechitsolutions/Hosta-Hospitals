@@ -87,6 +87,15 @@ loginHospitalEmail: builder.mutation({
       }),
     }),
     
+      resetPassword: builder.mutation({
+      query: ({ phone, password} ) => ({
+        url: `/api/hospital/password`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+         body: {phone, password},
+      }),
+    }),
+    
 
 
   }),
@@ -99,5 +108,6 @@ useLoginHospitalMutation,
 useOtpHospitalMutation,
 useLoginHospitalEmailMutation,
 useAddAHospitalMutation,
+useResetPasswordMutation,
 
 } = hospitalApi;
