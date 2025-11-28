@@ -69,7 +69,7 @@ export function SpecialtiesTable({ specialties, search, onEdit, onDelete, isLoad
                     key={specialty._id}
                     className="border-b border-border hover:bg-muted/50 transition-colors"
                   >
-                    <td className="py-3 px-4 font-medium">{specialty.name}</td>
+                    <td className="py-3 px-4 font-medium">{specialty?.name?.toUpperCase()}</td>
                     <td className="py-3 px-4 text-muted-foreground text-sm">
                       {specialty.description || 'No description'}
                     </td>
