@@ -1,22 +1,25 @@
-
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Save, X, Check, Eye, EyeOff } from 'lucide-react'
-import { useGetAHospitalQuery, useLoginHospitalMutation, useOtpHospitalMutation, useUpdateHospitalMutation } from '@/app/service/hospital'
+import { Save, X, Check, Eye, EyeOff, Trash2, AlertTriangle, RotateCcw } from 'lucide-react'
+import { useDeleteHospitalMutation, useGetAHospitalQuery, useLoginHospitalMutation, useOtpHospitalMutation, useUpdateHospitalMutation, useRecoveryAccountHospitalMutation } from '@/app/service/hospital'
 import { toast } from 'sonner'
+import { useNavigate } from 'react-router-dom'
+import io from "socket.io-client";
+
+const socket = io("https://www.zorrowtek.in");
 
 export default function SettingsPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
   const [activeTab, setActiveTab] = useState('general')
+  const navigate = useNavigate();
 
-     const hospitalId = localStorage.getItem("adminId"); 
-
+  const hospitalId = localStorage.getItem("adminId"); 
 
   const { 
     data, 
@@ -25,10 +28,11 @@ export default function SettingsPage() {
     refetch
   } = useGetAHospitalQuery(hospitalId)
   
-
   const [updateHospital, { isLoading: isUpdating }] = useUpdateHospitalMutation()
   const [otpHospital, { isLoading: isSendingOtp }] = useOtpHospitalMutation()
   const [loginHospital, { isLoading: isLoggingIn }] = useLoginHospitalMutation()
+  const [deleteHospital, { isLoading: isDelete }] = useDeleteHospitalMutation()
+  const [recoveryAccountHospital, { isLoading: isRecovery }] = useRecoveryAccountHospitalMutation()
 
   const [settings, setSettings] = useState({
     hospitalName: '',
@@ -57,8 +61,30 @@ export default function SettingsPage() {
   const [otpError, setOtpError] = useState('')
   const [countdown, setCountdown] = useState(0)
 
+  // Delete Account States
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState('')
+  const [isAccountDeleted, setIsAccountDeleted] = useState(false)
+  const [deleteDate, setDeleteDate] = useState('')
+
   // Refs for OTP inputs
   const otpRefs = useRef([])
+
+
+    useEffect(() => {
+      socket.on("hospitalDelete", (data) => {
+        const currentId = localStorage.getItem("adminId");
+  
+        if (currentId === data.hospitalId) {     
+       localStorage.removeItem("adminId")
+       navigate("/"); 
+        }
+        
+      });
+  
+      return () => socket.off("hospitalDelete");
+    }, []);
+
 
   // Initialize settings when data is loaded
   useEffect(() => {
@@ -71,6 +97,12 @@ export default function SettingsPage() {
       // Pre-fill phone number if available
       if (hospitalData.phone) {
         setPhoneNumber(hospitalData.phone)
+      }
+      
+      // Check if account is deleted
+      if (hospitalData.deleteDate) {
+        setIsAccountDeleted(true)
+        setDeleteDate(hospitalData.deleteDate)
       }
     }
   }, [data])
@@ -110,14 +142,9 @@ export default function SettingsPage() {
 
     setLoading(true)
     try {
-
-        const formData = new FormData()
-    
-    // Append basic data
-    formData.append('name', editSettings.hospitalName)
-        formData.append('email', editSettings.email)
-
-
+      const formData = new FormData()
+      formData.append('name', editSettings.hospitalName)
+      formData.append('email', editSettings.email)
 
       const result = await updateHospital({
         id: hospitalId,
@@ -130,8 +157,8 @@ export default function SettingsPage() {
       toast.success('Settings updated successfully!');
       refetch()
     } catch (error) {
-       const msg = error?.data?.message || "Server error!";
-       toast.error(msg);
+      const msg = error?.data?.message || "Server error!";
+      toast.error(msg);
     } finally {
       setLoading(false)
       setTimeout(() => setSaveMessage(''), 3000)
@@ -171,34 +198,31 @@ export default function SettingsPage() {
 
     try {
       setOtpError('')
-      // First send OTP request
       const result = await loginHospital({
         phone: phoneNumber
       }).unwrap()
 
       setIsOtpSent(true)
-      setCountdown(60) // 60 seconds countdown
+      setCountdown(60)
     } catch (error) {
-       const msg = error?.data?.message || "Server error!";
-       toast.error(msg);
+      const msg = error?.data?.message || "Server error!";
+      toast.error(msg);
     }
   }
 
   const handleOtpChange = (value, index) => {
-    if (!/^\d?$/.test(value)) return // Only allow digits
+    if (!/^\d?$/.test(value)) return
 
     const newOtp = [...otp]
     newOtp[index] = value
     setOtp(newOtp)
-    setOtpError('') // Clear error when user types
+    setOtpError('')
 
-    // Auto-focus next input
     if (value && index < 5) {
       const nextInput = otpRefs.current[index + 1]
       if (nextInput) nextInput.focus()
     }
 
-    // Auto-submit when all fields are filled
     if (value && index === 5) {
       const otpString = newOtp.join('')
       if (otpString.length === 6) {
@@ -210,17 +234,14 @@ export default function SettingsPage() {
   const handleOtpKeyDown = (e, index) => {
     if (e.key === 'Backspace') {
       if (!otp[index] && index > 0) {
-        // Move to previous input on backspace if current is empty
         const prevInput = otpRefs.current[index - 1]
         if (prevInput) {
           prevInput.focus()
-          // Clear the previous input
           const newOtp = [...otp]
           newOtp[index - 1] = ''
           setOtp(newOtp)
         }
       } else if (otp[index]) {
-        // Clear current input on backspace
         const newOtp = [...otp]
         newOtp[index] = ''
         setOtp(newOtp)
@@ -239,13 +260,11 @@ export default function SettingsPage() {
         newOtp[index] = num
       })
       setOtp(newOtp)
-      setOtpError('') // Clear error on paste
+      setOtpError('')
       
-      // Focus last input after paste
       const lastInput = otpRefs.current[6]
       if (lastInput) lastInput.focus()
       
-      // Auto-submit after paste
       setTimeout(() => {
         verifyOtpAndUpdatePassword()
       }, 100)
@@ -253,37 +272,27 @@ export default function SettingsPage() {
   }
 
   const verifyOtpAndUpdatePassword = async () => {
-       const otpString = otp.join('')
+    const otpString = otp.join('')
     
     if (otpString.length !== 6) {
-      // setError('Please enter complete 6-digit OTP')
-      // toast.warning('Please enter complete 6-digit OTP');
       return
     }
 
-
     setLoading(true)
     try {
-      // Verify OTP with phone number using the otpHospital mutation
       const verifyResult = await otpHospital({
         phone: phoneNumber,
         otp: otpString
       }).unwrap()
 
+      const formData = new FormData()
+      formData.append('newPassword', passwordData.newPassword)
 
-
-        const formData = new FormData()
-    
-    // Append basic data
-    formData.append('newPassword', passwordData.newPassword)
-
-      // If OTP verification successful, update password
       const updateResult = await updateHospital({
         id: hospitalId,
         data: formData
       }).unwrap()
 
-      // Reset all states
       setPasswordData({
         newPassword: '',
         confirmPassword: '',
@@ -297,8 +306,8 @@ export default function SettingsPage() {
       
       refetch()
     } catch (error) {
-       const msg = error?.data?.message || "Server error!";
-       toast.error(msg);
+      const msg = error?.data?.message || "Server error!";
+      toast.error(msg);
     } finally {
       setLoading(false)
       setTimeout(() => setPasswordMessage(''), 3000)
@@ -307,12 +316,10 @@ export default function SettingsPage() {
 
   const resendOtp = () => {
     if (countdown === 0) {
-      // Clear all OTP fields when resending
       setOtp(['', '', '', '', '', ''])
       setOtpError('')
       sendOtp()
       
-      // Focus first input after resend
       setTimeout(() => {
         if (otpRefs.current[0]) {
           otpRefs.current[0].focus()
@@ -328,6 +335,53 @@ export default function SettingsPage() {
     setOtpError('')
     setCountdown(0)
   }
+
+  // Delete Account Functions
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm.toLowerCase() !== 'delete') {
+      toast.warning('Please type "delete" to confirm account deletion');
+      return;
+    }
+
+    try {
+      const result = await deleteHospital(hospitalId).unwrap();
+      toast.success('Account deletion initiated successfully! Your account will be permanently deleted in 10 days.');
+      setShowDeleteModal(false);
+      setDeleteConfirm('');
+      setIsAccountDeleted(true);
+      setDeleteDate(result?.data?.deleteDate || new Date().toISOString());
+      
+      // Don't remove from localStorage - keep user logged in for recovery
+      refetch();
+    } catch (error) {
+      const msg = error?.data?.message || "Server error!";
+      toast.error(msg);
+    }
+  };
+
+  // Recovery Account Function
+  const handleRecoveryAccount = async () => {
+    try {
+      const result = await recoveryAccountHospital(hospitalId).unwrap();
+      toast.success('Account recovery initiated successfully! Your account has been restored.');
+      setIsAccountDeleted(false);
+      setDeleteDate('');
+      refetch();
+    } catch (error) {
+      const msg = error?.data?.message || "Server error!";
+      toast.error(msg);
+    }
+  };
+
+  const openDeleteModal = () => {
+    setShowDeleteModal(true);
+    setDeleteConfirm('');
+  };
+
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setDeleteConfirm('');
+  };
 
   // Format date for display
   const formatDate = (dateString) => {
@@ -345,6 +399,15 @@ export default function SettingsPage() {
       return 'Invalid date'
     }
   }
+
+  // Calculate remaining days until permanent deletion
+  const getRemainingDays = () => {
+    if (!deleteDate) return 0;
+    const deleteDateTime = new Date(deleteDate).getTime();
+    const currentTime = new Date().getTime();
+    const timeDiff = deleteDateTime + (10 * 24 * 60 * 60 * 1000) - currentTime; // 10 days from delete date
+    return Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+  };
 
   if (isLoading) {
     return (
@@ -369,6 +432,34 @@ export default function SettingsPage() {
         <p className="text-muted-foreground mt-2">Manage your account settings</p>
       </div>
 
+      {/* Account Deletion Banner */}
+      {isAccountDeleted && (
+        <div className="p-4 rounded-lg bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800">
+          <div className="flex items-center justify-between">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="text-yellow-600 mt-0.5 flex-shrink-0" size={20} />
+              <div>
+                <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                  Account Scheduled for Deletion
+                </p>
+                <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
+                  Your account is scheduled for permanent deletion on {formatDate(deleteDate)} 
+                  ({getRemainingDays()} days remaining). You can recover your account during this period.
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={handleRecoveryAccount}
+              disabled={isRecovery}
+              className="bg-green-600 hover:bg-green-700 cursor-pointer"
+            >
+              <RotateCcw size={16} className="mr-2" />
+              {isRecovery ? 'Recovering...' : 'Recover Account'}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="flex gap-2 border-b border-border">
         <button
@@ -390,6 +481,16 @@ export default function SettingsPage() {
           }`}
         >
           Change Password
+        </button>
+        <button
+          onClick={() => setActiveTab('delete')}
+          className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+            activeTab === 'delete'
+              ? 'border-red-500 text-red-600'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          Delete Account
         </button>
       </div>
 
@@ -483,6 +584,15 @@ export default function SettingsPage() {
                 <p className="text-sm font-medium text-muted-foreground">Last Updated</p>
                 <p className="text-foreground">{formatDate(data?.data?.updatedAt)}</p>
               </div>
+              {isAccountDeleted && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-muted-foreground">Scheduled Deletion Date</p>
+                  <p className="text-red-600 font-medium">{formatDate(deleteDate)}</p>
+                  <p className="text-sm text-red-600">
+                    {getRemainingDays()} days remaining until permanent deletion
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </>
@@ -504,7 +614,6 @@ export default function SettingsPage() {
               <CardDescription>Update your account password</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* New Password */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">New Password</label>
                 <div className="relative">
@@ -529,7 +638,6 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* Confirm Password */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Confirm New Password</label>
                 <div className="relative">
@@ -581,6 +689,100 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         </>
+      )}
+
+      {/* Delete Account Tab */}
+      {activeTab === 'delete' && (
+        <Card className="border-border max-w-2xl border-red-200 dark:border-red-800">
+          <CardHeader>
+            <CardTitle className="text-red-600 flex items-center gap-2">
+              <AlertTriangle size={24} />
+              Delete Account
+            </CardTitle>
+            <CardDescription className="text-red-600/80">
+              {isAccountDeleted ? 'Account Recovery' : 'Permanently delete your hospital account'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {isAccountDeleted ? (
+              // Recovery View
+              <div className="space-y-4">
+                <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800">
+                  <div className="flex items-start gap-3">
+                    <Check className="text-green-600 mt-0.5 flex-shrink-0" size={20} />
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                        Account Scheduled for Deletion
+                      </p>
+                      <p className="text-sm text-green-700 dark:text-green-300">
+                        Your account is currently scheduled for deletion. You can recover it during the 10-day grace period.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Scheduled Deletion Date</p>
+                  <p className="text-lg font-semibold text-red-600">{formatDate(deleteDate)}</p>
+                  <p className="text-sm text-red-600">
+                    {getRemainingDays()} days remaining until permanent deletion
+                  </p>
+                </div>
+
+                <div className="pt-4">
+                  <Button
+                    onClick={handleRecoveryAccount}
+                    disabled={isRecovery}
+                    className="w-full bg-green-600 hover:bg-green-700 cursor-pointer"
+                  >
+                    <RotateCcw size={18} className="mr-2" />
+                    {isRecovery ? 'Recovering Account...' : 'Recover My Account'}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              // Delete View
+              <>
+                <div className="p-4 rounded-lg bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="text-red-600 mt-0.5 flex-shrink-0" size={20} />
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                        Important: Account Deletion Information
+                      </p>
+                      <ul className="text-sm text-red-700 dark:text-red-300 space-y-1 list-disc list-inside">
+                        <li>This account will be temporarily deleted and permanently removed after 10 days</li>
+                        <li>During this 10-day period, you can recover your account</li>
+                        <li>After 10 days, your account and all associated data will be permanently deleted</li>
+                        <li>Once permanently deleted, you can register again with the same credentials</li>
+                        <li>All your booking data, patient records, and hospital information will be lost</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    <strong>Warning:</strong> This action cannot be undone after the 10-day grace period. 
+                    Please make sure you have exported any important data before proceeding.
+                  </p>
+                </div>
+
+                <div className="pt-4">
+                  <Button
+                    onClick={openDeleteModal}
+                    variant="destructive"
+                    className="w-full cursor-pointer"
+                    disabled={isDelete}
+                  >
+                    <Trash2 size={18} className="mr-2" />
+                    {isDelete ? 'Deleting Account...' : 'Delete My Account'}
+                  </Button>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* OTP Verification Modal */}
@@ -669,7 +871,6 @@ export default function SettingsPage() {
 
                   <Button
                     variant="ghost"
-                    
                     onClick={closeOtpModal}
                     className="w-full mt-2 cursor-pointer text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                   >
@@ -678,6 +879,67 @@ export default function SettingsPage() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg p-6 max-w-md w-full border border-red-200 dark:border-red-800 shadow-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-red-100 dark:bg-red-900 rounded-full">
+                <AlertTriangle className="text-red-600 dark:text-red-400" size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-red-600 dark:text-red-400">Delete Account</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">This action is irreversible after 10 days</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-4 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
+                <p className="text-sm text-red-700 dark:text-red-300 font-medium">
+                  Are you sure you want to delete your account?
+                </p>
+                <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                  Your account will be temporarily deleted and permanently removed after 10 days.
+                  You can recover it during this period.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Type <span className="font-mono text-red-600">"delete"</span> to confirm:
+                </label>
+                <Input
+                  type="text"
+                  placeholder='Type "delete" to confirm'
+                  value={deleteConfirm}
+                  onChange={(e) => setDeleteConfirm(e.target.value)}
+                  className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button
+                  variant="outline"
+                  onClick={closeDeleteModal}
+                  className="flex-1 cursor-pointer"
+                  disabled={isDelete}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleDeleteAccount}
+                  variant="destructive"
+                  className="flex-1 cursor-pointer"
+                  disabled={isDelete || deleteConfirm.toLowerCase() !== 'delete'}
+                >
+                  {isDelete ? 'Deleting...' : 'Delete Account'}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}

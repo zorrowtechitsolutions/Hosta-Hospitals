@@ -176,8 +176,7 @@ export default function NotificationsPage() {
   const unreadCount = allNotifications.filter((n) => !n.read).length
 
   const toggleRead = async (id, currentReadStatus) => {
-    console.log(id, "hii");
-    
+   
     try {
       if (!currentReadStatus) {
         

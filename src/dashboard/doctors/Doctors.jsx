@@ -97,6 +97,8 @@ export default function DoctorsPage() {
           data: doctorData
         }).unwrap()
       }
+
+      toast.success("Docter added!")
       
       // Refresh hospital data
       hospitalRefetch()

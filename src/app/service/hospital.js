@@ -95,6 +95,21 @@ loginHospitalEmail: builder.mutation({
          body: {phone, password},
       }),
     }),
+
+        deleteHospital: builder.mutation({
+      query: (id ) => ({
+        url: `/api/hospital/${id}`,
+        method: "DELETE",
+      }),
+    }),
+
+      recoveryAccountHospital: builder.mutation({
+      query: (id ) => ({
+        url: `/api/hospital/${id}/recovery`,
+        method: "PUT",
+      }),
+    }),
+    
     
 
 
@@ -109,5 +124,7 @@ useOtpHospitalMutation,
 useLoginHospitalEmailMutation,
 useAddAHospitalMutation,
 useResetPasswordMutation,
+useDeleteHospitalMutation,
+useRecoveryAccountHospitalMutation,
 
 } = hospitalApi;
