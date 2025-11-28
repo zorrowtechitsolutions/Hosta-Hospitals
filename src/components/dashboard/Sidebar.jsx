@@ -32,7 +32,7 @@ export function Sidebar({ name, imageUrl, onLinkClick }) {
         {/* Logo */}
         <div className="p-6 border-sidebar-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center overflow-hidden">
+            <div className="w-10 h-10 rounded bg-green-600 flex items-center justify-center overflow-hidden">
               {imageUrl ? (
                 <img src={imageUrl} alt="logo" className="w-full h-full object-cover" />
               ) : (

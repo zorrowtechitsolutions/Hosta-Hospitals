@@ -20,14 +20,13 @@ export const doctorsApi = createApi({
       query: ({ hospitalId,
         specialtyId,
         doctorId,
-         data} ) => (
-          console.log( data, "hiiiii"),
-          
+        doctorsData
+        } ) => (          
           {
         url: `/api/hospital/${hospitalId}/specialty/${ specialtyId}/doctors/${doctorId}`,
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-         body:  data,
+         body:  doctorsData,
       }),
     }),
 

@@ -24,8 +24,16 @@ export const notificationApi = createApi({
     // Update a notfication admin
 
     updatenotficationHospitalAll: builder.mutation({
-      query: ({ id }) => ({
+      query: ( id ) => ({
         url: `/api/notifications/hospital/read-all/${id}`,
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+      }),
+    }),
+
+      updateAnotficationHospital: builder.mutation({
+      query: ( id ) => ({
+        url: `/api/notifications/hospital/${id}`,
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
       }),
@@ -39,5 +47,6 @@ export const {
 useGetAllnotficationHospitalReadQuery,
 useGetAllnotficationHospitalUnReadQuery,
 useUpdatenotficationHospitalAllMutation,
+useUpdateAnotficationHospitalMutation,
 
 } = notificationApi;

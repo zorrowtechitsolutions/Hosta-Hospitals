@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { CheckCircle2, Circle, Calendar, Search } from 'lucide-react'
-import { useGetAllnotficationHospitalReadQuery, useGetAllnotficationHospitalUnReadQuery, useUpdatenotficationHospitalAllMutation } from '@/app/service/notification'
+import { useGetAllnotficationHospitalReadQuery, useGetAllnotficationHospitalUnReadQuery, useUpdateAnotficationHospitalMutation, useUpdatenotficationHospitalAllMutation } from '@/app/service/notification'
 import { toast } from 'sonner'
 
 // Skeleton Loading Component
@@ -103,6 +103,8 @@ export default function NotificationsPage() {
 
 
   const [updatenotficationHospitalAll, { isLoading: isPosting }] = useUpdatenotficationHospitalAllMutation()
+    const [updateAnotficationHospital, { isLoading: isPostingNotification }] = useUpdateAnotficationHospitalMutation()
+
 
   // Combine and transform the data
   const allNotifications = useMemo(() => {
@@ -174,11 +176,14 @@ export default function NotificationsPage() {
   const unreadCount = allNotifications.filter((n) => !n.read).length
 
   const toggleRead = async (id, currentReadStatus) => {
+    console.log(id, "hii");
+    
     try {
       if (!currentReadStatus) {
-        await updatenotficationHospitalAll(id).unwrap()
-        setRefreshKey(prev => prev + 1)
-        await Promise.all([refetchRead(), refetchUnread()])
+        
+        await updateAnotficationHospital(id).unwrap()
+        refetchRead(), refetchUnread()
+        toast.success("Notification readed!")
       }
     } catch (error) {
        const msg = error?.data?.message || "Server error!";
@@ -188,9 +193,11 @@ export default function NotificationsPage() {
 
   const markAllRead = async () => {
     try {
+
+     const hospitalId = localStorage.getItem("adminId"); 
       await updatenotficationHospitalAll(hospitalId).unwrap()
-      setRefreshKey(prev => prev + 1)
-      await Promise.all([refetchRead(), refetchUnread()])
+      refetchRead(), refetchUnread()
+      toast.success("Notification all readed!")
     } catch (error) {
        const msg = error?.data?.message || "Server error!";
        toast.error(msg); 
@@ -311,7 +318,7 @@ export default function NotificationsPage() {
             <div className="divide-y divide-border max-h-[600px] overflow-y-auto">
               {filteredNotifications.map((notif) => (
                 <div
-                  key={notif._id}
+                  key={notif?._id}
                   className={`p-4 hover:bg-muted/50 transition-colors ${
                     !notif.read ? 'bg-primary/5' : ''
                   }`}
