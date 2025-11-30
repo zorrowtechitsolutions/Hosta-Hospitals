@@ -119,9 +119,6 @@ export default function SpecialtiesPage() {
     return <div className="flex justify-center items-center h-64">Loading specialties...</div>
   }
 
-  if (error || specialtyError) {
-    return <div className="flex justify-center items-center h-64 text-red-500">Error loading data</div>
-  }
 
   return (
     <div className="space-y-6">
