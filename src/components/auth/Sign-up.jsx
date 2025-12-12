@@ -226,10 +226,7 @@ export function SignUp({ onSwitchToSignIn }) {
       // Remove confirmPassword from the request
       delete requestData.confirmPassword
 
-      const result = await addAHospital({ data: requestData }).unwrap()
-
-      console.log(result, "hiii");
-      
+      const result = await addAHospital({ data: requestData }).unwrap()      
       
       if (result.status == 200) {
         
