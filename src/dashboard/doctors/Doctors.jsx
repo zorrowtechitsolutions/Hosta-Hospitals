@@ -81,6 +81,8 @@ export default function DoctorsPage() {
           doctorId: existingDoctor._id,
           data: doctorData
         }).unwrap()
+              toast.success("Docter updated!")
+
       } else {
         // Add new doctor - find specialty ID by name from specialties API
         const specialty = specialtiesData?.find(
@@ -96,9 +98,10 @@ export default function DoctorsPage() {
           specialtyId: specialty._id,
           data: doctorData
         }).unwrap()
+              toast.success("Docter added!")
+
       }
 
-      toast.success("Docter added!")
       
       // Refresh hospital data
       hospitalRefetch()
